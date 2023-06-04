@@ -105,3 +105,9 @@ ENV/
 .vscode/
 .idea/
 .devcontainer/
+
+# tmp files
+/tmp
+
+# debugging files
+debug_data_plane_table.py

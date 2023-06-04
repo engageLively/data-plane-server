@@ -56,5 +56,7 @@ class InvalidDataException(Exception):
      or a bad schema is specified, or a table row is the wrong length, or..
     '''
     def __init__(self, message):
-        super().__init__()
+        super().__init__(message)
         self.message = message
+
+
