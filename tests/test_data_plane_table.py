@@ -38,7 +38,7 @@ import re
 
 import pandas as pd
 import pytest
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, InvalidDataException
+from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 from data_plane_table import DataPlaneFilter, DataPlaneTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
 
 table_test_1 = {
@@ -96,11 +96,49 @@ def test_all_values_and_numeric_spec():
     table.get_rows = lambda: [['Ted', 21], ['Alice', 24], ['Jane', 20]]
     assert table.numeric_spec('age') == {'max_val': 24, "min_val": 20, "increment": 1}
 
+from data_plane_table import _convert_to_type
+import datetime
+def test_convert_to_type():
+    valid_strings = ['a', 1, 2, 3, None, True, False, 1.0, math.nan]
+    
+    for string in valid_strings:
+        assert str(string) == _convert_to_type(DATA_PLANE_STRING, string)
+
+    valid_floats = [0, 0.03, -2, '-2', '-3.5', 25]
+
+    for float_num in valid_floats:
+        assert float(float_num) == _convert_to_type(DATA_PLANE_NUMBER, float_num)
+    
+    valid_ints = [('0b00', 2), ('0xab', 16), ('0o473', 8)]
+    for (string, base) in valid_ints:
+        assert int(string, base) == _convert_to_type(DATA_PLANE_NUMBER, string)
+
+    trues = [True, 'true', 'True', 't', '1', 1]
+    for true in trues:
+        assert _convert_to_type(DATA_PLANE_BOOLEAN, true)
+
+    falses = [False, 'False', 'false', 'foo', 'f', None, math.nan, 0]
+    for false in falses:
+        assert not  _convert_to_type(DATA_PLANE_BOOLEAN, false)
+
+    valid_iso_datetimes = ['2023-09-11', '2023-09-11T12:00:00']
+    for datetime_string in valid_iso_datetimes:
+        assert datetime.datetime.fromisoformat(datetime_string) == _convert_to_type( DATA_PLANE_DATETIME, datetime_string)
+
+    valid_iso_times = ['01:11:11', '01:11']
+    for time_string in valid_iso_times:
+        assert datetime.time.fromisoformat(time_string) == _convert_to_type(DATA_PLANE_TIME_OF_DAY, time_string)
+
+    valid_iso_dates = ['2023-09-11', '2023-01-01']
+    for date_string in valid_iso_dates:
+        assert datetime.date.fromisoformat(date_string) == _convert_to_type(DATA_PLANE_DATE, date_string)
+
+
 
 def _check_valid_spec_error(bad_filter_spec, error_message):
     with pytest.raises(InvalidDataException) as e:
         check_valid_spec(bad_filter_spec)
-        # assert e.message == error_message
+        assert e.message == error_message
 
 def test_check_valid_spec_bad_operator():
     '''
@@ -157,6 +195,18 @@ def test_check_valid_spec_bad_in_list_values():
     for bad_value in bad_lists:
         _check_valid_spec_error(bad_value[0], f'Invalid Values {bad_value[1]} for IN_LIST')
 
+def test_check_valid_spec_bad_in_range_values():
+    '''
+    Check when the max_val and min_val field to IN_RANGE aren't primitives
+    '''
+    bad_values_types = [None,  {"foo"}, [1, 2, 3]]
+    bad_values_column_checks = [({"operator": "IN_RANGE", "column": "a", "max_val": bad_type, "min_val": 2}, bad_type) for bad_type in bad_values_types]
+    for bad_value in bad_values_column_checks:
+        _check_valid_spec_error(bad_value[0], f'The type of max_val must be one of [str, int, float, bool], not  {type(bad_value[1])}')
+    incomparable = [('a', 1), ('a', True),  ('a', 1.0)]
+    incomparable_specs =  [({"operator": "IN_RANGE", "column": "a", "max_val": pair[0], "min_val": pair[1]}, f'max_val {pair[0]} and min_val {pair[1]} must be comparable for an IN_RANGE filter') for pair in incomparable]
+    for spec in incomparable_specs:
+        _check_valid_spec_error(spec[0], spec[1])
     
 
 def test_check_valid_spec_bad_regex():
@@ -206,6 +256,10 @@ VALID_SIMPLE_SPECS = [
     {"operator": "IN_RANGE", "column": "age1","max_val": 2, "min_val": 4},
     {"operator": "IN_RANGE", "column": "age1", "max_val": 2, "min_val": math.nan},
     {"operator": "IN_RANGE", "column": "age1",  "max_val": math.nan, "min_val": math.nan},
+    {"operator": "IN_RANGE", "column": "foo", "max_val": True, "min_val": False},
+    {"operator": "IN_RANGE", "column": "foo", "max_val": 'a', "min_val": 'b'},
+    {"operator": "IN_RANGE", "column": "foo", "max_val": 1, "min_val": True},
+    {"operator": "IN_RANGE", "column": "foo", "max_val": 1.0, "min_val": True},
     {"operator": "REGEX_MATCH", "column": "name", "expression": ''},
     {"operator": "REGEX_MATCH", "column": "name", "expression": '^.*$'},
     {"operator": "REGEX_MATCH", "column": "name", "expression": '\\\\'},
@@ -253,9 +307,9 @@ def test_data_plane_filter_bad_columns():
     '''
     filter_spec = {"operator": "IN_LIST", "column": "name", "values": []}
     _bad_columns_check(filter_spec, [1, 2], 'Invalid column specifcations [1, 2]' )
-    _bad_columns_check(filter_spec, [{"a": 3, "type": DATA_PLANE_STRING}], 'Invalid column specifcations [{"a": 3, "type": DATA_PLANE_STRING}]' )
+    _bad_columns_check(filter_spec, [{"a": 3, "type": DATA_PLANE_STRING}], 'Invalid column specifications [{"a": 3, "type": DATA_PLANE_STRING}]' )
     _bad_columns_check(filter_spec, [{"name": 3}], 'Invalid column specifcations [{"name": 3}]' )
-    _bad_columns_check(filter_spec, [{"name": 3}, {"name": "name", "type": {DATA_PLANE_STRING}}], 'Invalid column specifcations [{"name": 3}]' )
+    _bad_columns_check(filter_spec, [{"name": 3}, {"name": "name", "type": {DATA_PLANE_STRING}}], 'Invalid column specifications [{"name": 3}]' )
     _bad_columns_check(filter_spec, [{"name": "age", "type": DATA_PLANE_NUMBER}], 'name is not a valid column name')
     filter_spec = {"operator": "REGEX_MATCH", "expression": "^.*$", "column": "age"}
     columns = [{"name": "name", "type": DATA_PLANE_STRING}, {"name": "age", "type": DATA_PLANE_NUMBER}]
@@ -318,4 +372,16 @@ def test_to_filter_spec():
 # the filters actually filter the data properly.  We will use the following table for tests:
 
 from tests.table_data_good import names, ages, dates, times, datetimes, booleans
+rows = [[names[i], ages[i], dates[i], times[i], datetimes[i], booleans[i]] for i in range(len(names))]
+
+schema = [
+    {"name": "name", "type": DATA_PLANE_STRING},
+    {"name": "age", "type": DATA_PLANE_NUMBER},
+    {"name": "date", "type": DATA_PLANE_DATE},
+    {"name": "time", "type": DATA_PLANE_TIME_OF_DAY},
+    {"name": "datetime", "type": DATA_PLANE_DATETIME},
+    {"name": "boolean", "type": DATA_PLANE_BOOLEAN}
+]
+
+table = DataPlaneTable(schema, lambda:  rows)
 

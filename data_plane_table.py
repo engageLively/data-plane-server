@@ -48,6 +48,9 @@ DATA_PLANE_FILTER_FIELDS = {
 
 DATA_PLANE_FILTER_OPERATORS = set(DATA_PLANE_FILTER_FIELDS.keys())
 
+
+
+
 def _convert_to_type(data_plane_type, value):
     '''
     Convert value to data_plane_type, so that comparisons can be done.  This is used to convert
@@ -72,15 +75,36 @@ def _convert_to_type(data_plane_type, value):
     elif data_plane_type == DATA_PLANE_NUMBER:
         if isinstance(value, int) or isinstance(value, float):
             return value
+        
+        # try an automated conversion to float.  If it fails, it still
+        # might be an int in base 2, 8, or 16, so pass the error to try
+        # all of those
+
         try:
             return float(value)
         except ValueError:
+            pass
+        # if we get here, it must be a string or won't convert
+        if not isinstance(value, str):
             raise InvalidDataException(f'Cannot convert {value} to number')
+        
+        # Try to convert to binary, octal, decimal
+        
+        for base in [2, 8, 16]:
+            try:
+                return int(value, base)
+            except ValueError:
+                pass
+        #Everything has failed, so toss the exception
+        raise InvalidDataException(f'Cannot convert {value} to number')
+    
     elif data_plane_type == DATA_PLANE_BOOLEAN:
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
-            return value in {'True', 'true', 't'}
+            return value in {'True', 'true', 't', '1'}
+        if isinstance(value, int):
+            return value == 1
         return False
     # Everything else is a date or time
 
@@ -222,6 +246,27 @@ def check_valid_spec(filter_spec):
         except TypeError:
             msg = f'Expression {filter_spec["expression"]} is not a valid regular expression'
             raise InvalidDataException(msg)
+    
+    elif operator == 'IN_RANGE':
+        primitive_types = {str, int, float, bool}
+        # even though dates, datetimes, and times are allowable, they must be strings
+        # in iso format in the spec
+        fields = ['max_val', 'min_val']
+        for field in fields:
+            if filter_spec[field] is None:
+                # for some reason type-check doesn't catch this
+                raise InvalidDataException(f'The type of {field} must be one of {primitive_types}, not NoneType')
+
+            if not type(filter_spec[field]) in primitive_types:
+                raise InvalidDataException(f'The type of {field} must be one of {primitive_types}, not {type(filter_spec[field])}')
+
+        try:
+            # max_val and min_val must be comparable
+             result = filter_spec['max_val'] > filter_spec['min_val']
+        except TypeError:
+            msg = f'max_val {filter_spec["max_val"]} and min_val {filter_spec["min_val"]} must be comparable for an IN_RANGE filter'
+            raise InvalidDataException(msg)
+               
 
 def _valid_column_spec(column):
     # True iff column is a dictionary with keys "name", "type"
