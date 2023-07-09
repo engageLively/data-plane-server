@@ -34,8 +34,11 @@ the tables automatically using the instantiated DataPlaneTable.
 from functools import reduce
 from math import nan, isnan
 import re
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
+import pandas as pd
+
 import datetime
+
+from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 
 DATA_PLANE_FILTER_FIELDS = {
     'ALL': {'arguments'},
@@ -47,8 +50,6 @@ DATA_PLANE_FILTER_FIELDS = {
 }
 
 DATA_PLANE_FILTER_OPERATORS = set(DATA_PLANE_FILTER_FIELDS.keys())
-
-
 
 
 def _convert_to_type(data_plane_type, value):
@@ -251,6 +252,7 @@ def check_valid_spec(filter_spec):
         primitive_types = {str, int, float, bool}
         # even though dates, datetimes, and times are allowable, they must be strings
         # in iso format in the spec
+        '''
         fields = ['max_val', 'min_val']
         for field in fields:
             if filter_spec[field] is None:
@@ -259,6 +261,7 @@ def check_valid_spec(filter_spec):
 
             if not type(filter_spec[field]) in primitive_types:
                 raise InvalidDataException(f'The type of {field} must be one of {primitive_types}, not {type(filter_spec[field])}')
+        '''
 
         try:
             # max_val and min_val must be comparable
@@ -274,7 +277,7 @@ def _valid_column_spec(column):
         keys = column.keys()
         return 'name' in keys and 'type' in keys
     return False
-
+    
 
 class DataPlaneFilter:
     '''
@@ -536,3 +539,24 @@ class RowTable(DataPlaneTable):
         '''
         return self.rows
 pass
+
+
+
+class RemoteCSVTable(DataPlaneTable):
+    '''
+    A very common format for data interchange on the Internet is a downloadable
+    CSV file.  It's so common it's worth making a class, just for this.  The
+    idea is that, when a get_rows request comes in, we download the table
+    into a dataframe and then return the list of rows, perhaps after doing
+    unit conversion
+    '''
+
+    def __init__(self, schema, url):
+        super(schema, self.get_rows)
+        self.url = url
+        self.dataframe = None
+
+    def get_rows(self):
+        if self.dataFrame is None:
+            self.dataframe = pd.read_csv(self.url)
+        return self.dataframe.values.tolist()
