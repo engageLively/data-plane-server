@@ -38,7 +38,7 @@ import pandas as pd
 
 import datetime
 
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
+from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 
 DATA_PLANE_FILTER_FIELDS = {
     'ALL': {'arguments'},
@@ -110,32 +110,32 @@ def _convert_to_type(data_plane_type, value):
     # Everything else is a date or time
 
     elif data_plane_type == DATA_PLANE_DATETIME:
-       if type(value) == type(datetime.datetime.now()):
-           return value
-       if isinstance(value, str):
-        try:
-            return datetime.datetime.fromisoformat(value)
-        except Exception:
-            raise InvalidDataException(f"Can't convert {value} to datetime")
+        if type(value) == type(datetime.datetime.now()):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.datetime.fromisoformat(value)
+            except Exception:
+                raise InvalidDataException(f"Can't convert {value} to datetime")
         
     elif data_plane_type == DATA_PLANE_DATE:
-       if type(value) == type(datetime.datetime.now().date()):
-           return value
-       if isinstance(value, str):
-        try:
-            return datetime.date.fromisoformat(value)
-        except Exception:
-            raise InvalidDataException(f"Can't convert {value} to date")
-    else: # data_plane_type = DATA_PLANE_TIMESTAMP
+        if type(value) == type(datetime.datetime.now().date()):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.date.fromisoformat(value)
+            except Exception:
+                raise InvalidDataException(f"Can't convert {value} to date")
+    else: # data_plane_type = DATA_PLANE_TIME_OF_DAT
         if type(value) == type(datetime.datetime.now().time()):
-           return value
+            return value
         if isinstance(value, str):
             try:
                 return datetime.time.fromisoformat(value)
             except Exception:
                 raise InvalidDataException(f"Can't convert {value} to time")
      
-    raise InvalidDataException(f"Couldn't convert {value} to {data_plane_type}")
+        raise InvalidDataException(f"Couldn't convert {value} to {data_plane_type}")
 
 
 def _convert_list_to_type(data_plane_type, value_list):
@@ -153,7 +153,7 @@ def _convert_list_to_type(data_plane_type, value_list):
     '''
     return [_convert_to_type(data_plane_type, elem) for elem in value_list]
 
-def _convert_to_string(data_plane_type, value):
+def _convert_to_output_string(data_plane_type, value):
     '''
     This is the inverse of _convert_to_type: convert a value which is a data plane type to
     a string.  For strings, booleans, and numbers, this is just return the value itself.
@@ -179,7 +179,7 @@ def _convert_list_to_string(data_plane_type, value_list):
     Returns:
         value_list in a form suitable for a list of strings
     '''
-    return [_convert_to_string(data_plane_type, value) for value in value_list]
+    return [_convert_to_output_string(data_plane_type, value) for value in value_list]
 
 def _canonize_set(any_set):
     # Canonize a set into a sorted list; this is useful to ensure that
@@ -346,8 +346,8 @@ class DataPlaneFilter:
             if self.operator == 'IN_LIST':
                 result["values"] = _convert_list_to_string(self.column_type, self.value_list)
             elif self.operator == 'IN_RANGE':
-                result["max_val"] = _convert_to_string(self.column_type,  self.max_val)
-                result["min_val"] = _convert_to_string(self.column_type, self.min_val)
+                result["max_val"] = _convert_to_output_string(self.column_type,  self.max_val)
+                result["min_val"] = _convert_to_output_string(self.column_type, self.min_val)
             else: # operator == 'REGEX_MATCH'
                 result["expression"] = self.expression
         return result
@@ -425,6 +425,7 @@ class DataPlaneTable:
             passed with each table request
     '''
     def __init__(self, schema, get_rows, header_variables=None):
+        self.is_dataplane_table = True
         self.schema = schema
         self.get_rows = get_rows
         self.header_variables = DEFAULT_HEADER_VARIABLES if header_variables is None else header_variables
@@ -517,7 +518,7 @@ class DataPlaneTable:
         Returns:
             The subset of self.get_rows() which pass the filter
         '''
-        made_filter = DataPlaneFilter(filter_spec, self.columns)
+        made_filter = DataPlaneFilter(filter_spec, self.schema)
         return made_filter.filter(self.get_rows())
 
 
@@ -530,16 +531,109 @@ class RowTable(DataPlaneTable):
     authentication.
     '''
     def __init__(self, schema, rows):
-        super(schema, self.get_rows)
+        super(RowTable, self).__init__(schema, self._get_rows)
         self.rows = rows
     
-    def get_rows(self):
+    def _get_rows(self):
         '''
         Very simple: just return the rows
         '''
         return self.rows
-pass
+    
+def _convert_to_string(s):
+   return s if isinstance(s, str) else str(s) 
 
+def _convert_to_number(x, default_value = nan):
+    # Convert x to a number, or nan if there is no conversion
+    if (isinstance(x, int) or isinstance(x, float)):
+        return x
+    try:
+        return float(x)
+    except ValueError:
+        pass
+    try:
+        return int(x)
+    except ValueError:
+        return default_value
+
+def _convert_to_time(t, format_string = None, default_value = datetime.time(0, 0, 0)):
+    if isinstance(t, datetime.time):
+        return t
+    if isinstance(t, datetime.date):
+        return default_value
+    if isinstance(t, datetime.datetime):
+        return t.time()
+    if isinstance(t, str):
+        if format_string:
+            try:
+                return datetime.dateime.strptime(t, format_string).time()
+            except ValueError:
+                return default_value
+        try:
+            return datetime.time.fromisoformat(t)
+        except ValueError:
+            return default_value
+    return default_value
+
+def _convert_to_date(d, format_string = None, default_value = datetime.date(1900, 1, 1)):
+    if isinstance(d, datetime.date):
+        return d
+    if isinstance(d, datetime.time):
+        return default_value
+    if isinstance(d, datetime.datetime):
+        return d.date()
+    if isinstance(d, str):
+        if format_string:
+            try:
+                return datetime.datetime.strptime(d, format_string).date()
+            except ValueError:
+                return default_value
+        try:
+            return datetime.date.fromisoformat(d)
+        except ValueError:
+            return default_value
+    return default_value
+
+def _convert_to_datetime(dt,  format_string = None, default_value = datetime.datetime(1900, 1, 1, 0, 0, 0)):
+    if isinstance(dt, datetime.datetime):
+        return dt
+    if isinstance(dt, datetime.time):
+        return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute, dt.second)
+    if isinstance(dt, datetime.date):
+        return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0)
+    if isinstance(dt, str):
+        if format_string:
+            try:
+                return datetime.dateime.strptime(dt, format_string)
+            except ValueError:
+                return default_value
+        try:
+            return datetime.datetime.fromisoformat(dt)
+        except ValueError:
+            return default_value
+    return default_value
+
+        
+    
+
+def _coerce_types(series, data_plane_type, column_default = None):
+    # Internal use, coercing a series (from a CSV or a dataframe) to the
+    # desired data plane type.
+    # ATM, no heroic conversion is being done -- eventually we will have to
+    # add a pretty significant ETL component
+    if data_plane_type == DATA_PLANE_STRING:
+        return [_convert_list_to_string(x) for x in series]
+    if data_plane_type == DATA_PLANE_NUMBER:
+        return [_convert_to_number(x) for x in series]
+    if data_plane_type == DATA_PLANE_BOOLEAN:
+        return [True if b else False for b in series]
+    if data_plane_type == DATA_PLANE_TIME_OF_DAY:
+        return [_convert_to_time(t) for t in series]
+    if data_plane_type == DATA_PLANE_DATE:
+        return [_convert_to_date(d) for d in series]
+    if data_plane_type == DATA_PLANE_DATETIME:
+        return [_convert_to_datetime(dt) for dt in series]
+    
 
 
 class RemoteCSVTable(DataPlaneTable):
@@ -560,3 +654,5 @@ class RemoteCSVTable(DataPlaneTable):
         if self.dataFrame is None:
             self.dataframe = pd.read_csv(self.url)
         return self.dataframe.values.tolist()
+    
+   

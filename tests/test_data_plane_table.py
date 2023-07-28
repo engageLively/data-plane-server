@@ -39,8 +39,8 @@ import random
 
 import pandas as pd
 import pytest
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
-from data_plane_table import DataPlaneFilter, DataPlaneTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
+from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
+from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
 
 table_test_1 = {
     "rows": [["Ted", 21], ["Alice", 24]],
@@ -97,7 +97,7 @@ def test_all_values_and_numeric_spec():
     table.get_rows = lambda: [['Ted', 21], ['Alice', 24], ['Jane', 20]]
     assert table.numeric_spec('age') == {'max_val': 24, "min_val": 20, "increment": 1}
 
-from data_plane_table import _convert_to_type
+from dataplane.data_plane_table import _convert_to_type
 import datetime
 def test_convert_to_type():
     valid_strings = ['a', 1, 2, 3, None, True, False, 1.0, math.nan]

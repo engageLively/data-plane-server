@@ -45,72 +45,21 @@ After that, requests for the named table will be served by the created data serv
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import logging
-import csv
-import datetime
 from json import JSONDecodeError, loads
+import pandas as pd
 
 from flask import Blueprint, abort, jsonify, request
 
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
-from data_plane_utils import DATA_PLANE_SCHEMA_TYPES
-from data_plane_utils import InvalidDataException
-from data_plane_table import DataPlaneTable, RowTable, check_valid_spec
 
+from dataplane.data_plane_utils import DATA_PLANE_NUMBER
+from dataplane.data_plane_utils import DATA_PLANE_SCHEMA_TYPES
+from dataplane.data_plane_utils import InvalidDataException
+from dataplane.data_plane_table import DataPlaneTable, check_valid_spec
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
 table_servers = {}
-
-
-def _convert_type(type, value):
-    if type == DATA_PLANE_NUMBER:
-        return float(value)
-    if type == DATA_PLANE_DATE:
-        # return a parsed datetime
-        return datetime.datetime.fromisoformat(value)
-    if type == DATA_PLANE_DATETIME:
-        # return a parsed datetime
-        return datetime.datetime.fromisoformat(value)
-    if type == DATA_PLANE_TIME_OF_DAY:
-        # return a parsed datetime
-        return datetime.datetime.fromisoformat(value)
-    if type == DATA_PLANE_BOOLEAN:
-        return True if value else False
-    return value
-
-def _convert_row(types, row):
-    return [_convert_type(types[i], row[i]) for i in range(len(types))]
-    
-
-def create_server_from_csv(table_name, path_to_csv_file):
-    '''
-    Create a server from a CSV file.The file must meet the format for a RowTable:
-    1. Each row must contain the same number of columns;
-    2. The first row (row 0) are the names of the columns
-    3. The second row (row 1)  has the types of the columns
-    4. The type of each entry in rows 2-n must match the declared type of the column
-    '''
-    try:
-        with open(path_to_csv_file, 'r') as f:
-            r = csv.reader(f)
-            rows = r.readrows()
-        assert len(rows) > 2
-        num_columns = len(rows[0])
-        for row in rows[1:]: assert len(row) == num_columns
-        for entry in rows[1]: assert entry in DATA_PLANE_SCHEMA_TYPES
-    except Exception as error:
-        raise InvalidDataException(error)
-    
-    schema = [{"name": rows[0][i], "type": rows[1][i]} for i in range(num_columns)]
-    try:
-        final_rows = [_convert_row(rows[1], row) for row in rows[2:]]
-        server = RowTable(schema, final_rows)
-        add_data_plane_table(table_name, server)
-
-    except ValueError as error:
-        raise InvalidDataException(f'{error} raised during type conversion')
 
 
 def _get_all_tables():
@@ -120,53 +69,90 @@ def _get_all_tables():
     table_name is not specified. In this case, all tables will be searched for this column name.
     
     Returns:
-        a list of all tables 
+        a list of all tables which are authorized
     '''
-    return table_servers.values()
+    servers = table_servers.values()
+    return [server["table"] for server in servers if _server_authorized(server)]
 
-def add_data_plane_table(table_name, data_plane_table):
+def _check_headers(headers):
+    '''
+    Each header should be a dictionary of the form "variable": <string>  "value": <string>, which 
+    are the authorization tokens required to access this table.  Doesn't return  a value: raises an error if a header doesn't match
+    '''
+    for header in headers:
+        assert "variable" in header, f'header {header} does not have a variable field'
+        assert "value" in header, f'header {header} does not have a value field'
+
+def add_data_plane_table(table_name, table, required_headers = []):
     '''
     Register a DataPlaneTable to serve data for a specific table name.
-    Raises an InvalidDataException if table_name is None or data_plane_tabe is None or is not an instance of DataPlaneTable.
+    Raises an InvalidDataException if table_name is None or data_plane_table is None or is not an instance of DataPlaneTable.
 
     Arguments:
         table_name: name to register the server for
         data_plane_table: an instance of DataPlaneTable which services the requests
+        required_headers: a list of the form {"variable": <string>, "value": <string>}.  The required headers re
         
     '''
     try:
-        assert data_plane_table is not None, "data_plane_table cannot be None"
-        bad_type = type(data_plane_table)
-        msg = f'data_plane_table must be an instance of DataPlaneTable, not {bad_type}'
-        assert isinstance(data_plane_table, DataPlaneTable), msg
+        assert table is not None, "table cannot be None"
+        # bad_type = type(table)
+        # msg = f'table must be an instance of DataPlaneTable, not {bad_type}'
+        # assert isinstance(table, DataPlaneTable), msg
+        try:
+            msg = 'table must be an instance of DataPlaneTable'
+            assert table.is_dataplane_table, msg
+        except AttributeError:
+            raise InvalidDataException(msg)
+        _check_headers(required_headers)
     except AssertionError as assertion_error:
-        raise InvalidDataException from assertion_error
-    table_servers[table_name] = data_plane_table
+        raise InvalidDataException(assertion_error)
+    
+    table_servers[table_name] = {
+        "table": table,
+        "headers": required_headers
+    }
 
-def _log_and_abort(message):
+def _log_and_abort(message, code = 400):
     '''
-    Sent an abort with code 400 and log the error message.  Utility, internal use only
+    Sent an abort with error code (defaut 400) and log the error message.  Utility, internal use only
 
     Arguments:
         message: string with the message to be logged/sent
     '''
     logging.error(message)
-    abort(400, message)
+    abort(code, message)
+
+def _table_server_if_authorized(request_api, table_name):
+    '''
+    Utility for _get_table_server and _get_table_servers.  Get the server for  table_name and return it.
+    Aborts the request with a 400 if the table isn't found.  Aborts with a 403 if the
+    table isn't authorized
+
+    Arguments:
+        request_api: api  of the request
+        table_name: the table to get
+    '''
+    try:
+        server = table_servers[table_name]
+        check_authorization(request_api, table_name, server)
+        return server["table"]
+    except KeyError:
+        msg = f'No handler defined for table {table_name} for request {request_api}'
+        _log_and_abort(msg)
 
 def _get_table_server(request_api):
     '''
     Internal use.  Get the server for a specific table_name and return it.
-    Aborts the request with a 400 if the table isn't found.
+    Aborts the request with a 400 if the table isn't found.  Aborts with a 403 if the
+    table isn't authorized
 
     Arguments:
         request_api: api  of the request
     '''
     table_name = request.headers.get('Table-Name')
-    try:
-        return table_servers[table_name]
-    except KeyError:
-        msg = f'No handler defined for table {table_name} for request {request_api}'
-        _log_and_abort(msg)
+    return _table_server_if_authorized(request_api, table_name)
+    
     
 
 
@@ -181,18 +167,14 @@ def _get_table_servers(request_api):
     table_name = request.headers.get('Table-Name')
     
     if table_name is not None:
-        try:
-            return [table_servers[table_name]]
-        except KeyError:
-            msg = f'No handler defined for table {table_name} for request {request_api}'
-            _log_and_abort(msg)
+        return [_table_server_if_authorized(request_api, table_name)]
     else:
-        tables = _get_all_tables()
-        if len(tables) == 0:
-            message = f'No tables found  for request {request_api}'
+        authorized_servers = _get_all_tables()
+        if len(authorized_servers) == 0:
+            message = f'No authorized servers found  for request {request_api}'
             _log_and_abort(message)
         else:
-            return tables
+            return authorized_servers
 
 
 def _check_required_parameters(handle, parameter_set):
@@ -211,29 +193,45 @@ def _check_required_parameters(handle, parameter_set):
     if len(missing_parameters) > 0:
         _log_and_abort(f'Missing arguments to {handle}: {missing_parameters}')
 
-
-@data_plane_server_blueprint.route('/hello')
-def hello():
+def _server_authorized(server):
     '''
-    Just a simple get target to make sure that the framework is working
-
+    Check to see if the server is authorized.  
+    The server is authorized iff:
+    1. This table doesn't require authentication
+    2. The authentication in the header matches the authentication required
     Arguments:
-       None
+        server -- the table server to check for authentication
+    Returns:
+        True iff the header meets the authentication requirements
     '''
-    return "hello"
+    if server["headers"] is None:
+        return True
+    if len(server["headers"]) == 0:
+        return True
+    for header in server["headers"]:
+        auth_value = request.headers.get(header["variable"])
+        if auth_value is None or auth_value != header["value"]:
+            return False
+    return True
 
-@data_plane_server_blueprint.route('/echo_headers', methods = ['POST', 'GET'])
-def echo_headers():
+
+def check_authorization(route, table_name, server):
     '''
-    Echo the headers back, for debugging
-
+    Check that the required headers are present for the table.
+    If they are not, abort with a 403 (not authorized) and log it
     Arguments:
-        None
+        route: The route of the request, required for abort message
+        table_name: The name of the table of the request, required for abort message
+        server: the table server, with the required variables
     '''
-    result = {}
-    for key in request.headers.keys():
-        result[key] = request.headers[key]
-    return jsonify(result)
+    # Message doesn't contain information about variables which are missing -- should it?
+    msg = f'Table {table_name} requires authentication, authentication missing.  Request is {route}'
+    if not _server_authorized(server):
+            _log_and_abort(msg, 403)
+
+
+
+
 
 # @data_plane_server_blueprint.route('/echo_post', methods=['POST'])
 # def echo_post():
@@ -248,7 +246,7 @@ def get_filtered_rows():
     '''
     Get the filtered rows from a request.  In the initializer, this
     was registered for the /get_filtered_rows route.  Gets the filter_spec
-    from the Filter-Spec header variable If there is no filter_spec, returns
+    from the Filter-Spec field in the header.  If there is no filter_spec, returns
     all rows using server.get_rows().  Aborts with a 400 if there is no
     table_name, or if check_valid_spec or get_filtered_rows throws an
     InvalidDataException, or if the filter_spec is not valid JSON.
@@ -259,7 +257,7 @@ def get_filtered_rows():
         The filtered rows as a JSONified list of lists
     '''
     filter_spec = None
-    filter_spec_as_json = request.headers.get('Filter-Spec')
+    filter_spec_as_json  = request.headers.get('Filter-Spec')
     if filter_spec_as_json is not None:
         try:
             filter_spec = loads(filter_spec_as_json)
@@ -268,6 +266,7 @@ def get_filtered_rows():
 
 
     server = _get_table_server('get_filtered_rows')
+    # Check to make sure that 
     if filter_spec is not None:
         try:
             check_valid_spec(filter_spec)
@@ -331,7 +330,7 @@ def get_all_values():
         None
     '''
 
-    servers = _get_table_servers('/get_numeric_spec')
+    servers = _get_table_servers('/get_all_values')
     column_name = request.args.get('column_name')
     if column_name is not None:
         try:
@@ -362,7 +361,9 @@ def get_tables():
     result = {}
     items = table_servers.items()
     for item in items:
-        result[item[0]] = item[1].schema
+        server  = item[1]
+        if _server_authorized(server):
+            result[item[0]] = server["table"].schema
     return jsonify(result)
 
 @data_plane_server_blueprint.route('/get_table_spec')
@@ -379,7 +380,7 @@ def get_table_spec():
         None
 
     '''
-    servers = _get_table_servers('/get_numeric_spec')
+    servers = _get_table_servers('/get_table_spec')
     return jsonify({"header_variables": servers[0].header_variables, "schema": servers[0].schema})
 
 @data_plane_server_blueprint.route('/help', methods=['POST', 'GET'])
