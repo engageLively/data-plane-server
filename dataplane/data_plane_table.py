@@ -480,32 +480,24 @@ class DataPlaneTable:
         result.sort()
         return result
 
-    def numeric_spec(self, column_name:str):
+    def range_spec(self, column_name:str):
         '''
-        get the dictionary {min_val, max_val, increment} for column_name
+        Get the dictionary {min_val, max_val} for column_name
         Arguments:
 
-            column_name: name of the column to get the numeric spec for
+            column_name: name of the column to get the range spec for
 
         Returns:
-            the minimum, maximum, and increment of the column
+            the minimum and  maximum of the column
 
         '''
         entry = [column for column in self.schema if column["name"] == column_name]
         if len(entry) == 0:
             raise InvalidDataException(f'{column_name} is not a column of this table')
-        if entry[0]["type"] != DATA_PLANE_NUMBER:
-            msg = f'The type of {column_name} must be {DATA_PLANE_NUMBER}, not {entry[0]["type"]}'
-            raise InvalidDataException(msg)
+        
         values = self.all_values(column_name)
-        for value in values:
-            if isnan(value):
-                raise InvalidDataException(f'Bad data in column {column_name}') 
-
-        shift = values[1:]
-        difference = [shift[i] - values[i] for i in range(len(shift))]
-        increments = [diff for diff in difference if diff > 0]
-        return {"max_val": values[-1], "min_val": values[0], "increment": min(increments)}
+       
+        return {"max_val": values[-1], "min_val": values[0]}
             
 
     def get_filtered_rows(self, filter_spec):
@@ -654,5 +646,3 @@ class RemoteCSVTable(DataPlaneTable):
         if self.dataFrame is None:
             self.dataframe = pd.read_csv(self.url)
         return self.dataframe.values.tolist()
-    
-   

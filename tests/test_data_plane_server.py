@@ -34,36 +34,17 @@ Run tests on the dashboard table
 import pytest
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, RowTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
-from server.data_plane_server import add_data_plane_table, table_servers
-from main import create_app
 
-@pytest.fixture
-def client():
-    app = create_app()
-    app.config['TESTING'] = True
-    with app.test_client() as client:
-        yield client
+from app import app
 
-from tests.table_data_good import names, ages, dates, times, datetimes, booleans, series_for_name
+import os
+os.chdir('/workspaces/dataplane/data_plane')
 
-schema = [
-    {"name": "name", "type": DATA_PLANE_STRING},
-    {"name": "age", "type": DATA_PLANE_NUMBER},
-    {"name": "date", "type": DATA_PLANE_DATE},
-    {"name": "time", "type": DATA_PLANE_TIME_OF_DAY},
-    {"name": "datetime", "type": DATA_PLANE_DATETIME},
-    {"name": "boolean", "type": DATA_PLANE_BOOLEAN}
-]
+client = app.test_client()
 
-rows = [[names[i], ages[i], dates[i], times[i], datetimes[i], booleans[i]] for i in range(len(names))]
-
-table = RowTable(schema, rows)
-
-def test_add_table():
-    with pytest.raises(InvalidDataException) as exception:
-        add_data_plane_table('Foo', None)
-    with pytest.raises(InvalidDataException) as exception:
-        add_data_plane_table('Foo', 1)
-    add_data_plane_table('table1', table)
-    assert(table_servers['table1']['table'] == table)
+def test_get_table_spec():
+    response = client.get('/init')
+    # response = client.get('/get_table_spec')
+    assert response.status_code == 200
+    
 

@@ -46,72 +46,26 @@ After that, requests for the named table will be served by the created data serv
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import os
 from json import JSONDecodeError, loads
+from glob import glob
+
 import pandas as pd
 
 from flask import Blueprint, abort, jsonify, request
 
 
 from dataplane.data_plane_utils import DATA_PLANE_NUMBER
-from dataplane.data_plane_utils import DATA_PLANE_SCHEMA_TYPES
+
 from dataplane.data_plane_utils import InvalidDataException
-from dataplane.data_plane_table import DataPlaneTable, check_valid_spec
+from dataplane.data_plane_table import  check_valid_spec
+from dataplane.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
-table_servers = {}
+table_server = TableServer()
 
 
-def _get_all_tables():
-    '''
-    Get all the tables.  This
-    is to support a request for a numeric_spec or all_values for a column name when the
-    table_name is not specified. In this case, all tables will be searched for this column name.
-    
-    Returns:
-        a list of all tables which are authorized
-    '''
-    servers = table_servers.values()
-    return [server["table"] for server in servers if _server_authorized(server)]
-
-def _check_headers(headers):
-    '''
-    Each header should be a dictionary of the form "variable": <string>  "value": <string>, which 
-    are the authorization tokens required to access this table.  Doesn't return  a value: raises an error if a header doesn't match
-    '''
-    for header in headers:
-        assert "variable" in header, f'header {header} does not have a variable field'
-        assert "value" in header, f'header {header} does not have a value field'
-
-def add_data_plane_table(table_name, table, required_headers = []):
-    '''
-    Register a DataPlaneTable to serve data for a specific table name.
-    Raises an InvalidDataException if table_name is None or data_plane_table is None or is not an instance of DataPlaneTable.
-
-    Arguments:
-        table_name: name to register the server for
-        data_plane_table: an instance of DataPlaneTable which services the requests
-        required_headers: a list of the form {"variable": <string>, "value": <string>}.  The required headers re
-        
-    '''
-    try:
-        assert table is not None, "table cannot be None"
-        # bad_type = type(table)
-        # msg = f'table must be an instance of DataPlaneTable, not {bad_type}'
-        # assert isinstance(table, DataPlaneTable), msg
-        try:
-            msg = 'table must be an instance of DataPlaneTable'
-            assert table.is_dataplane_table, msg
-        except AttributeError:
-            raise InvalidDataException(msg)
-        _check_headers(required_headers)
-    except AssertionError as assertion_error:
-        raise InvalidDataException(assertion_error)
-    
-    table_servers[table_name] = {
-        "table": table,
-        "headers": required_headers
-    }
 
 def _log_and_abort(message, code = 400):
     '''
@@ -134,14 +88,18 @@ def _table_server_if_authorized(request_api, table_name):
         table_name: the table to get
     '''
     try:
-        server = table_servers[table_name]
-        check_authorization(request_api, table_name, server)
-        return server["table"]
-    except KeyError:
+        return table_server.get_table(table_name, request.headers)
+    except TableNotFoundException:
         msg = f'No handler defined for table {table_name} for request {request_api}'
-        _log_and_abort(msg)
+        code = 400
+    except TableNotAuthorizedException:
+        msg = msg = f'Table {table_name} requires authentication, authentication missing.  Request is {request_api}'
+        code = 403
+    _log_and_abort(msg, code)
 
-def _get_table_server(request_api):
+        
+
+def _get_table(request_api):
     '''
     Internal use.  Get the server for a specific table_name and return it.
     Aborts the request with a 400 if the table isn't found.  Aborts with a 403 if the
@@ -152,83 +110,6 @@ def _get_table_server(request_api):
     '''
     table_name = request.headers.get('Table-Name')
     return _table_server_if_authorized(request_api, table_name)
-    
-    
-
-
-def _get_table_servers(request_api):
-    '''
-    Internal use.  Get the server for a specific table_name, or all servers if the name is null.
-    Aborts the request with a 400 if the table isn't found.
-
-    Arguments:
-        request_api: api  of the request
-    '''
-    table_name = request.headers.get('Table-Name')
-    
-    if table_name is not None:
-        return [_table_server_if_authorized(request_api, table_name)]
-    else:
-        authorized_servers = _get_all_tables()
-        if len(authorized_servers) == 0:
-            message = f'No authorized servers found  for request {request_api}'
-            _log_and_abort(message)
-        else:
-            return authorized_servers
-
-
-def _check_required_parameters(handle, parameter_set):
-    '''
-    Check to make sure the required parameters are in the parameter set
-    required for a request, aborting if they aren't. This can only be used
-    with get requests, since it pulls this from the args multidict.
-    This is designed for internal use only
-
-    Arguments:
-        handle: the URL handle, for error reporting
-        parameter_set: the set of parameters required
-    '''
-    sent_parameters = set(request.args.keys())
-    missing_parameters = parameter_set - sent_parameters
-    if len(missing_parameters) > 0:
-        _log_and_abort(f'Missing arguments to {handle}: {missing_parameters}')
-
-def _server_authorized(server):
-    '''
-    Check to see if the server is authorized.  
-    The server is authorized iff:
-    1. This table doesn't require authentication
-    2. The authentication in the header matches the authentication required
-    Arguments:
-        server -- the table server to check for authentication
-    Returns:
-        True iff the header meets the authentication requirements
-    '''
-    if server["headers"] is None:
-        return True
-    if len(server["headers"]) == 0:
-        return True
-    for header in server["headers"]:
-        auth_value = request.headers.get(header["variable"])
-        if auth_value is None or auth_value != header["value"]:
-            return False
-    return True
-
-
-def check_authorization(route, table_name, server):
-    '''
-    Check that the required headers are present for the table.
-    If they are not, abort with a 403 (not authorized) and log it
-    Arguments:
-        route: The route of the request, required for abort message
-        table_name: The name of the table of the request, required for abort message
-        server: the table server, with the required variables
-    '''
-    # Message doesn't contain information about variables which are missing -- should it?
-    msg = f'Table {table_name} requires authentication, authentication missing.  Request is {route}'
-    if not _server_authorized(server):
-            _log_and_abort(msg, 403)
-
 
 
 
@@ -265,88 +146,79 @@ def get_filtered_rows():
             _log_and_abort(f'Bad Filter Specification: {filter_spec_as_json}.  Error {error.msg}')
 
 
-    server = _get_table_server('get_filtered_rows')
-    # Check to make sure that 
+    table = _get_table('get_filtered_rows')
+    # If there is no filter, just return the table's rows.  If
+    # there is a filter, make sure it's valid and then return the filtered
+    # rows
     if filter_spec is not None:
         try:
             check_valid_spec(filter_spec)
-            return jsonify(server.get_filtered_rows(filter_spec))
+            return jsonify(table.get_filtered_rows(filter_spec))
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
     else:
-        return jsonify(server.get_rows())
+        return jsonify(table.get_rows())
 
-def _is_numeric_column(table_server, column_name):
+
+def _check_required_parameters(route, required_parameters):
     '''
-    Internal use only.  Returns True iff the table_server has a column with name column_name,
-     and if the type is DATA_PLANE_NUMBER
-
+    Internal use only.  Check that the required parameters are present.
+    If they aren't, aborts with a 400 and an error message
     Arguments:
-        table_server: the table server to check
-        column_name: the name of the column_name
+        route: the route of the call, for an error message
+        required_parameters: the parameters that are supposed to be present
     '''
-    column_type = table_server.get_column_type(column_name)
-    return column_type is not None and column_type == DATA_PLANE_NUMBER
+    missing = [parameter for parameter in required_parameters if request.args.get(parameter) is None]
+    if len(missing) > 0:
+        parameter_string = f'parameters {set(missing)}' if len(missing) > 1 else f'parameter {missing[0]}'
+        msg = 'Missing ' + parameter_string + f'for route {route}'
+        _log_and_abort(msg, 400)
 
 
-@data_plane_server_blueprint.route('/get_numeric_spec')
-def get_numeric_spec():
+@data_plane_server_blueprint.route('/get_range_spec')
+def get_range_spec():
     '''
-    Target for the /get_numeric_spec route.  Makes sure that column_name is specified
-    in the call, and that if table_name is present, it is registered, then returns the
-    numeric spec {"min_val", "max_val", "increment"} as a JSONified dictionary.  Uses
-    server.get_numeric_spec(column_name) to create the numeric spec.  Aborts with a 400
-    for missing arguments, bad table name, or if there is no column_name in the arguments.
+    Target for the /get_range_spec route.  Makes sure that column_name and table_name are  specified in the call, then returns the
+    range  spec {"min_val", "max_val","} as a JSONified dictionary. Aborts with a 400
+    for missing arguments, missing table, bad column name or if there is no column_name in the arguments, and a 403 if the table is not authorized.
 
     Arrguments:
             None
     '''
+    _check_required_parameters('/get_range_spec', ['table_name', 'column_name'])
+    column_name =  request.args.get('column_name')
+    table_name = request.args.get('table_name')
+    try:
+        return table_server.get_range_spec(table_name, column_name, request.headers)
+    except TableNotAuthorizedException:
+        _log_and_abort(f'Access to table {table_name} not authorized, request /get_range_spec', 403)
+    except TableNotFoundException:
+        _log_and_abort(f'No  table {table_name} present, request /get_range_spec', 400)
+    except ColumnNotFoundException: 
+        _log_and_abort(f'No column {column_name} in table {table_name}, request /get_range_spec', 400)
 
-    servers = _get_table_servers('/get_numeric_spec')
-    column_name = request.args.get('column_name')
-    if column_name is not None:
-        matching_servers = [server for server in servers if _is_numeric_column(server, column_name)]
-        if len(matching_servers) == 0:
-            _log_and_abort(f'/get_numeric_spec found no numeric columns of name {column_name}')
-        spec = matching_servers[0].numeric_spec(column_name)
-        for server in matching_servers[1:]:
-            serv_spec = server.numeric_spec(column_name)
-            spec["max_val"] = max(spec["max_val"], serv_spec["max_val"])
-            spec["min_val"] = min(spec["min_val"], serv_spec["min_val"])
-            spec["increment"] = min(spec["increment"], serv_spec["increment"])
-        return jsonify(spec)
-    else:
-        _log_and_abort('/get_numeric_spec requires a parameter "column_name"')
 
 @data_plane_server_blueprint.route('/get_all_values')
 def get_all_values():
     '''
-    Target for the /get_all_values route.  Makes sure that column_name is specified in the call,
-    and that if table_name is present, it is registered, then returns the distinct values as a
-    JSONified list.  Uses server.get_all_values(column_name) to get the values.  Aborts with a
-    400 for missing arguments, bad table name, or if there is no column_name in the arguments.
+    Target for the /get_all_values route.  Makes sure that column_name and table_name are  specified in the call, then returns the
+    sorted list of all distinct values in the column.    Aborts with a 400
+    for missing arguments, missing table, bad column name or if there is no column_name in the arguments, and a 403 if the table is not authorized.
 
-    Arguments:
-        None
+    Arrguments:
+            None
     '''
-
-    servers = _get_table_servers('/get_all_values')
-    column_name = request.args.get('column_name')
-    if column_name is not None:
-        try:
-            matching_servers = [server for server in servers if server.get_column_type(column_name) is not None]
-            if len(matching_servers) == 0:
-                _log_and_abort(f'/get_all_values found no  columns of name {column_name}')
-            values_set = set(matching_servers[0].all_values(column_name))
-            for server in matching_servers[1:]:
-                values_set = values_set.union(set(server.all_values(column_name)))
-            result = list(values_set)
-            result.sort()
-            return jsonify(result)
-        except InvalidDataException as error:
-            _log_and_abort(f'Error in get_all_values for column {column_name}: {error}')
-    else:
-        _log_and_abort('/get_all_values requires a parameter "column_name"')
+    _check_required_parameters('/get_all_values', ['table_name', 'column_name'])
+    column_name =  request.args.get('column_name')
+    table_name = request.args.get('table_name')
+    try:
+        return table_server.get_all_values(table_name, column_name, request.headers)
+    except TableNotAuthorizedException:
+        _log_and_abort(f'Access to table {table_name} not authorized, request /get_all_values', 403)
+    except TableNotFoundException:
+        _log_and_abort(f'No  table {table_name} present, request /get_all_values', 400)
+    except ColumnNotFoundException: 
+        _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
 @data_plane_server_blueprint.route('/get_tables')
 def get_tables():
@@ -358,30 +230,32 @@ def get_tables():
     Arguments:
             None
     '''
-    result = {}
-    items = table_servers.items()
-    for item in items:
-        server  = item[1]
-        if _server_authorized(server):
-            result[item[0]] = server["table"].schema
-    return jsonify(result)
+    items = table_server.get_table_dictionary(request.headers)
+
+    return jsonify(items)
 
 @data_plane_server_blueprint.route('/get_table_spec')
 def get_table_spec():
     '''
-    Target for the /get_table_spec route.  Dumps a table_spec, which is a dictionary of the form:
-        {
-            "header_variables": {"required" : <list of names>, "optional": <list of names>},
-            "schema": list of {"name": <string>, "type": <one of DATA_PLANE_TYPEs>}
-            
-        }
+    Target for the /get_table_spec route.  Returns a dictionary of the
+    form {table_name: list of required authorization variables}
 
-    Arguments:
-        None
+    Returns:
+         A dictionary of the form {table_name: list of required authorization variables}
 
     '''
-    servers = _get_table_servers('/get_table_spec')
-    return jsonify({"header_variables": servers[0].header_variables, "schema": servers[0].schema})
+    return jsonify(table_server.get_auth_spec())
+
+@data_plane_server_blueprint.route('/init', methods = ['POST', 'GET'])
+def init():
+    table_server.__init__()
+    if os.path.exists('data_plane/tables'):
+        files = glob('./data_plane/tables/*.json')
+        for filename in files:
+            table_server.add_data_plane_table(build_table_spec(filename))
+    return jsonify(table_server.get_auth_spec())
+        
+
 
 @data_plane_server_blueprint.route('/help', methods=['POST', 'GET'])
 @data_plane_server_blueprint.route('/', methods=['POST', 'GET'])
@@ -392,11 +266,12 @@ def show_routes():
     '''
     pages = [
             {"url": "/, /help", "headers": "", "method": "GET", "description": "print this message"},
-            {"url": "/get_tables", "method": "GET", "headers": "", "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
-            {"url": "/get_filtered_rows", "method": "GET", "headers": "Filter-Spec <i>Type Filter Spec, required</i>, Table-Name <i>string, required</i>, Dashboard-Name <i>string, optional</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
-            {"url": "/get_numeric_spec?column_name<i>string, required</i>", "method": "GET", "headers": "Table-Name <i>string, optional</i>, Dashboard-Name <i>string, optional</i>", "description": "Get the  minimum, maximum, and increment values for column <i>column_name</i>, returned as a dictionary {min_val, max_val, increment}.  If Table-Name and/or Dashboard-Name is specified, restrict to that Table/Dashboard"},
-            {"url": "/get_all_values?column_name<i>string, required</i>", "method": "GET", "headers": "Table-Name <i>string, optional</i>, Dashboard-Name <i>string, optional</i>", "description": "Get all the distinct values for column <i>column_name</i>, returned as a sorted list.  If Table-Name and/or Dashboard-Name is specified, restrict to that Table/Dashboard"},
-            {"url": "/start", "method": "GET", "description": "ensure that all feeds are being updated"},
+            {"url": "/get_tables", "method": "GET", "headers": "<i>as required for authentication</i>", "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
+            {"url": "/get_filtered_rows?&table_name<i>string, required</i>", "method": "GET", "headers": "Filter-Spec <i>Type Filter Spec, required</i>, <i>others as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
+            {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers":"<i>as required for authentication</i>", "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},
+            {"url": "/get_all_values?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers": "<i>as required for authentication</i>", "description": "Get all the distinct values for column <i>column_name</i> in table <i>table_name</i>, returned as a sorted list.  Authentication variables shjould be in headers."},
+            {"url": "/get_table_spec", "method": "GET", "description": "Return the dictionary of table names and authorization variables"},
+            {"url": "/init", "method": "GET", "description": "Restart the table server and load any initial tables.  Returns the list returned by /get_table_spec"},
 
         ]
     page_strings = [f'<li>{page}</li>' for page in pages]

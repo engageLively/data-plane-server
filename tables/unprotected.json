@@ -1,0 +1,18 @@
+{
+    "name": "unprotected",
+    "headers": {},
+    "table": {
+        "schema": [
+            {"name": "column1", "type": "string"},
+            {"name": "column2", "type": "number"}
+        ],
+        "rows": [
+            ["Tammy", 48],
+            ["Sujata", 36],
+            ["Karen", 38],
+            ["Tori", 27],
+            ["Alexandra", 25],
+            ["Hitomi", 45]
+        ]
+    }
+}

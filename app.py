@@ -32,21 +32,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
-from flask import Blueprint, abort, jsonify, request, Flask
-
+from flask import  Flask
 
 import sys
 
 sys.path.append('.')
 sys.path.append('./data_plane')
 from data_plane.server.data_plane_server import data_plane_server_blueprint
+app = Flask(__name__)
 
-def create_app():
-    app = Flask(__name__)
+app.register_blueprint(data_plane_server_blueprint)
 
-    # Initialize Flask extensions here
-    
-    app.register_blueprint(data_plane_server_blueprint)
-    
-    return app
+if __name__ == '__main__':
+    app.run()
+

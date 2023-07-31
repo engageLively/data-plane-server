@@ -67,7 +67,7 @@ def test_create():
     assert table.get_column_type("Foo") == None
 
 
-def test_all_values_and_numeric_spec():
+def test_all_values_and_range_spec():
     '''
     Test getting all the values and the numeric specification from columns
     '''
@@ -81,21 +81,15 @@ def test_all_values_and_numeric_spec():
         table.all_values('Foo')
         # assert e.message == 'Foo is not a column of this table'
     with pytest.raises(InvalidDataException) as e:
-        table.numeric_spec(None)
+        table.range_spec(None)
         # assert e.message == 'None is not a column of this table'
     with pytest.raises(InvalidDataException) as e:
-        table.numeric_spec('Foo')
+        table.range_spec('Foo')
         # assert e.message == 'Foo is not a column of this table'
-    with pytest.raises(InvalidDataException) as e:
-        table.numeric_spec('name')
-        # assert e.message == f'The type of name must be {DATA_PLANE_NUMBER}, not {DATA_PLANE_STRING}'
-    assert table.numeric_spec('age') == {'max_val': 24, "min_val": 21, "increment": 3}
-    table.get_rows = lambda: [['Ted', 21], ['Alice', 24], ['Jane', 'foo']]
-    with pytest.raises(InvalidDataException) as e:
-        table.numeric_spec('age')
-        # assert e.message == 'Bad data in column age'
+    assert table.range_spec('name') == {'max_val': "Ted", "min_val": "Alice"}
+    assert table.range_spec('age') == {'max_val': 24, "min_val": 21}
     table.get_rows = lambda: [['Ted', 21], ['Alice', 24], ['Jane', 20]]
-    assert table.numeric_spec('age') == {'max_val': 24, "min_val": 20, "increment": 1}
+    assert table.range_spec('age') == {'max_val': 24, "min_val": 20}
 
 from dataplane.data_plane_table import _convert_to_type
 import datetime
