@@ -65,8 +65,6 @@ data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
 table_server = TableServer()
 
-
-
 def _log_and_abort(message, code = 400):
     '''
     Sent an abort with error code (defaut 400) and log the error message.  Utility, internal use only
@@ -98,7 +96,6 @@ def _table_server_if_authorized(request_api, table_name):
     _log_and_abort(msg, code)
 
         
-
 def _get_table(request_api):
     '''
     Internal use.  Get the server for a specific table_name and return it.
@@ -108,10 +105,8 @@ def _get_table(request_api):
     Arguments:
         request_api: api  of the request
     '''
-    table_name = request.headers.get('Table-Name')
+    table_name = request.args.get('table_name')
     return _table_server_if_authorized(request_api, table_name)
-
-
 
 
 # @data_plane_server_blueprint.route('/echo_post', methods=['POST'])
@@ -122,7 +117,7 @@ def _get_table(request_api):
 #     return jsonify(request.json)
 
 
-@data_plane_server_blueprint.route('/get_filtered_rows', methods=['GET'])
+@data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
 def get_filtered_rows():
     '''
     Get the filtered rows from a request.  In the initializer, this
@@ -137,27 +132,32 @@ def get_filtered_rows():
     Returns:
         The filtered rows as a JSONified list of lists
     '''
-    filter_spec = None
-    filter_spec_as_json  = request.headers.get('Filter-Spec')
-    if filter_spec_as_json is not None:
-        try:
-            filter_spec = loads(filter_spec_as_json)
-        except JSONDecodeError as error:
-            _log_and_abort(f'Bad Filter Specification: {filter_spec_as_json}.  Error {error.msg}')
-
-
-    table = _get_table('get_filtered_rows')
+    try:
+        data = request.get_json()
+        filter_spec = data["filter"]
+        table_name = data["table"]
+        columns = table["columns"]
+    except JSONDecodeError as error:
+        _log_and_abort(f'Bad arguments to /get_filtered_rows.  Error {error.msg}')
+    table = _table_server_if_authorized('/get_filtered_rows', table_name)
+    if columns is None: columns = []
+    # Make sure that the columns are all valid columns of this table
+    names = table.column_names()
+    bad_columns = [column for column in columns if columns not in names]
+    if (len(bad_columns) > 0):
+        _log_and_abort(f'Bad Columns {bad_columns} sent to /get_filtered_rows, table {table_name}', 400)
+    
     # If there is no filter, just return the table's rows.  If
     # there is a filter, make sure it's valid and then return the filtered
     # rows
     if filter_spec is not None:
         try:
             check_valid_spec(filter_spec)
-            return jsonify(table.get_filtered_rows(filter_spec))
+            return jsonify(table.get_filtered_rows(filter_spec = filter_spec, columns = columns))
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
     else:
-        return jsonify(table.get_rows())
+        return jsonify(table.get_rows(columns=columns))
 
 
 def _check_required_parameters(route, required_parameters):
@@ -270,7 +270,7 @@ def show_routes():
     pages = [
             {"url": "/, /help", "headers": "", "method": "GET", "description": "print this message"},
             {"url": "/get_tables", "method": "GET", "headers": "<i>as required for authentication</i>", "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
-            {"url": "/get_filtered_rows?&table_name<i>string, required</i>", "method": "GET", "headers": "Filter-Spec <i>Type Filter Spec, required</i>, <i>others as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
+            {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "GET", "headers": "Filter-Spec <i>Type Filter Spec, required</i>, <i>others as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
             {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers":"<i>as required for authentication</i>", "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},
             {"url": "/get_all_values?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers": "<i>as required for authentication</i>", "description": "Get all the distinct values for column <i>column_name</i> in table <i>table_name</i>, returned as a sorted list.  Authentication variables shjould be in headers."},
             {"url": "/get_table_spec", "method": "GET", "description": "Return the dictionary of table names and authorization variables"},

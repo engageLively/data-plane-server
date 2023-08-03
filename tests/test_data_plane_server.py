@@ -41,9 +41,6 @@ import os
 os.chdir('/workspaces/dataplane/data_plane')
 from app import app
 
-
-
-
 client = app.test_client()
 
 UNPROTECTED_SPEC = {
@@ -86,7 +83,8 @@ def test_get_table_spec():
         response = client.get('/get_tables', headers = headers)
         assert response.status_code == 200
         assert response.json == result
-    
+
+def test_all_values_and_range_spec():
     # For get_all_values and get_range_spec, just check the response codes -- 
     # we know the values from testing the table server
     routes = ['get_range_spec', 'get_all_values']
@@ -115,6 +113,26 @@ def test_get_table_spec():
             'get_range_spec': {'max_val': 'Tori', 'min_val': 'Alexandra'}
         }
         assert response.json == results[route]
+
+def test_get_filtered_rows():
+    # Check get_filtered_rows
+    # Check for a bad table name
+    response = client.post('get_filtered_rows')
+    assert response.status_code == 400
+    response = client.get('get_filtered_rows', json={'table': 'foo'})
+    assert response.status_code == 400
+    # Missing authentication
+    for (header, code) in header_list:
+        response = client.get('get_filtered_rows', json={'table_name':'protected'}, headers=header)
+        assert response.status_code == code
+    # Bad filter
+
+    
+
+
+
+    
+
 
 
     

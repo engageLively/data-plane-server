@@ -400,7 +400,15 @@ class DataPlaneFilter:
         else: # self.operator == 'REGEX_MATCH'
             return set([i for i in all_indices if self.regex.fullmatch(values[i]) is not None])
         
-
+def _select_entries_from_row(row, indices):
+    # Pick the entries of row trhat are in indices, maintaining the order of the 
+    # indices.  This is to support the column-choice operation in DataPlaneTable.get_filtered_rows
+    # Arguments:
+    #     row: the tow of vaslues
+    #     indices: the indices to pick
+    # Returns:
+    #     The subset of the row corresponding to the indices
+    return [row[i] for i in range(len(row)) if i in indices]
 
 
 DEFAULT_HEADER_VARIABLES = {"required": [], "optional": []}
@@ -498,20 +506,35 @@ class DataPlaneTable:
         values = self.all_values(column_name)
        
         return {"max_val": values[-1], "min_val": values[0]}
+    
+    
             
 
-    def get_filtered_rows(self, filter_spec):
+    def get_filtered_rows(self, filter_spec = None, columns = []):
         '''
         Filter the rows according to the specification given by filter_spec.
         Returns the rows for which the resulting filter returns True.
 
         Arguments:
             filter_spec: Specification of the filter, as a dictionary
+            columns: the names of the columns to return.  Returns all columns if absent
         Returns:
             The subset of self.get_rows() which pass the filter
         '''
-        made_filter = DataPlaneFilter(filter_spec, self.schema)
-        return made_filter.filter(self.get_rows())
+        # Note that we don't check if the column names are all valid
+        if columns is None: columns = [] # Make sure there's a value
+        if filter_spec is None:
+            rows = self.get_rows()
+        else:
+            made_filter = DataPlaneFilter(filter_spec, self.schema)
+            rows =  made_filter.filter(self.get_rows())
+        if columns == []:
+            return rows
+        else:
+            names = self.column_names()
+            column_indices = [i for i in range(len(names)) if names[i] in columns]
+            return [_select_entries_from_row(row, column_indices) for row in rows]
+
 
 
 class RowTable(DataPlaneTable):
