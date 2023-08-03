@@ -59,7 +59,7 @@ from dataplane.data_plane_utils import DATA_PLANE_NUMBER
 
 from dataplane.data_plane_utils import InvalidDataException
 from dataplane.data_plane_table import  check_valid_spec
-from dataplane.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
+from server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
@@ -249,8 +249,11 @@ def get_table_spec():
 @data_plane_server_blueprint.route('/init', methods = ['POST', 'GET'])
 def init():
     table_server.__init__()
-    if os.path.exists('data_plane/tables'):
-        files = glob('./data_plane/tables/*.json')
+    paths = [path for path in ['tables', 'data_plane/tables'] if os.path.isdir(path)]
+    path = paths[0] if len(paths) > 0 else None
+    
+    if path is not None:
+        files = glob(f'{path}/*.json')
         for filename in files:
             table_server.add_data_plane_table(build_table_spec(filename))
     return jsonify(table_server.get_auth_spec())

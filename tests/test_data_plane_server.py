@@ -32,19 +32,93 @@ Run tests on the dashboard table
 '''
 
 import pytest
+import json
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, RowTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
 
+import os
+
+os.chdir('/workspaces/dataplane/data_plane')
 from app import app
 
-import os
-os.chdir('/workspaces/dataplane/data_plane')
+
+
 
 client = app.test_client()
 
+UNPROTECTED_SPEC = {
+    "unprotected": [
+        {"name": "column1", "type": "string"},
+        {"name": "column2", "type": "number"}
+    ],
+    "test1": [
+        { "name": "name", "type": "string" },
+        { "name": "age",  "type": "number" },
+        { "name": "date", "type": "date" },
+        { "name": "time",  "type": "timeofday"},
+        { "name": "datetime", "type": "datetime" },
+        { "name": "boolean", "type": "boolean" }
+    ]
+
+}
+
+PROTECTED_SPEC = UNPROTECTED_SPEC.copy()
+PROTECTED_SPEC["protected"] = PROTECTED_SPEC["unprotected"]
+
+unprotected_tables = ['unprotected', 'test1']
+
 def test_get_table_spec():
     response = client.get('/init')
-    # response = client.get('/get_table_spec')
+    response = client.get('/get_table_spec')
     assert response.status_code == 200
+    # result = json.loads(response.json)
+    assert response.json == {
+        "protected": ["foo"],
+        "test1": [],
+        "unprotected": []
+    }
+    header_list_and_response = [
+        ({}, UNPROTECTED_SPEC),
+        ({"foo":"foo"}, UNPROTECTED_SPEC),
+        ({"foo": "bar"}, PROTECTED_SPEC)
+    ]
+    for (headers, result) in header_list_and_response:
+        response = client.get('/get_tables', headers = headers)
+        assert response.status_code == 200
+        assert response.json == result
+    
+    # For get_all_values and get_range_spec, just check the response codes -- 
+    # we know the values from testing the table server
+    routes = ['get_range_spec', 'get_all_values']
+    header_list = [({}, 403), ({"foo": "foo"}, 403), ({"foo": "bar"}, 200) ]
+    
+    for route in routes:
+        # don't provide required arguments
+        for suffix in ['', '?table_name', '?column_name']:
+            response = client.get(f'{route}{suffix}')
+            assert response.status_code == 400
+        # pass a bad table name
+        response = client.get(f'{route}?table_name=foo&column_name=bar')
+        assert response.status_code == 400
+        # pass a bad column  name
+        response = client.get(f'{route}?table_name=unprotected&column_name=bar')
+        assert response.status_code == 400
+        # check authorization
+        for (header, code) in header_list:
+            response = client.get(f'{route}?table_name=protected&column_name=column1', headers = header)
+            assert response.status_code == code
+        # Make sure unprotected is OK
+        response = client.get(f'{route}?table_name=unprotected&column_name=column1')
+        assert response.status_code == 200
+        results = {
+            'get_all_values': [ "Alexandra", "Hitomi", "Karen", "Sujata", "Tammy", "Tori"],
+            'get_range_spec': {'max_val': 'Tori', 'min_val': 'Alexandra'}
+        }
+        assert response.json == results[route]
+
+
+    
+    
+    
     
 

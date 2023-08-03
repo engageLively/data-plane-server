@@ -35,6 +35,7 @@
 from flask import  Flask
 
 import sys
+import os
 
 sys.path.append('.')
 sys.path.append('./data_plane')
@@ -42,6 +43,9 @@ from data_plane.server.data_plane_server import data_plane_server_blueprint
 app = Flask(__name__)
 
 app.register_blueprint(data_plane_server_blueprint)
+@app.route('/cwd')
+def cwd():
+    return os.getcwd()
 
 if __name__ == '__main__':
     app.run()
