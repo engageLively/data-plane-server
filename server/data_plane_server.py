@@ -55,7 +55,7 @@ import pandas as pd
 from flask import Blueprint, abort, jsonify, request
 
 
-from dataplane.data_plane_utils import DATA_PLANE_NUMBER
+from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY
 
 from dataplane.data_plane_utils import InvalidDataException
 from dataplane.data_plane_table import  check_valid_spec
@@ -64,6 +64,8 @@ from server.table_server import TableServer, TableNotFoundException, TableNotAut
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
 table_server = TableServer()
+
+NON_JSONIFIABLE_TYPES =  {DATA_PLANE_DATE, DATA_PLANE_TIME_OF_DAY, DATA_PLANE_DATETIME}
 
 def _log_and_abort(message, code = 400):
     '''
@@ -108,6 +110,91 @@ def _get_table(request_api):
     table_name = request.args.get('table_name')
     return _table_server_if_authorized(request_api, table_name)
 
+def _jsonifiable_value(value, column_type):
+    '''
+    Internal use.  Python doesn't jsonify dates, datetimes, or times properly, so
+    convert them to isoformat strings.  Return everything else as is
+    Arguments:
+        value -- the value to be converted
+        column_type -- the data plane type of the value
+    Returns
+        A jsonifiable form of the value
+    '''
+    if column_type in NON_JSONIFIABLE_TYPES:
+        return value.isoformat()
+    else:
+        return value
+
+def _jsonifiable_row_(row, column_types):
+    '''
+    Internal use.  Return the jsonified form of the row, using _jsonifiable_value for each element
+    Arguments:
+        row -- the row to be converted
+        column_types -- the types of each element of the row
+    Returns
+        A row of jsonifiable values
+    '''
+    return [_jsonifiable_value(row[i], column_types[i]) for i in range(len(row))]
+
+
+def _jsonifiable_rows_(rows, column_types):
+    '''
+    Internal use.  Return the jsonifiable form of the list of rows, using _jsonifiable_row for each row
+    Arguments:
+        rows -- the list of rows to be converted
+        column_types -- the types of each element of the row
+    Returns
+        A list of rows  of jsonified values
+    '''
+    return [_jsonifiable_row_(row, column_types) for row in rows]
+
+def _jsonifiable_column(column, column_type):
+    '''
+    Internal use.  Return a jsonifiable version of the column of values, using _jsonifiable_value
+    to do the conversion.  We actually cheat a little, only calling _jsonifiable_value if column_type
+    is one od DATA_PLANE_TIME, DATA_PLANE_DATE, DATA_PLANE_DATETIME
+    '''
+    if column_type in NON_JSONIFIABLE_TYPES:
+        return [_jsonifiable_value(value, column_type) for value in column]
+    else: 
+        return column
+    
+
+def _column_type(table_name, column):
+    '''
+    An internal method to get the type of column column in the table of name table_name.
+    This is called from get_all_values and get_range_spec, and those routines have already checked
+    that the table exists and is authorized, and that column is the name of a column of the table.
+    Hence no error-checking here.
+    Arguments:
+        table_name: the name of the table
+        column: the name of the column to get the type for
+    Returns:
+        The type of the column
+
+    '''
+    table = table_server.get_table(table_name, request.headers)
+    return table.get_column_type(column)
+
+
+def _column_types(table, columns):
+    '''
+    An internal method to get the list  of column types for the named columns in the table.
+    Gets all of the column types if columns is [], since this indicates no columns specfied.
+    Used by get_filtered_rows to get the column types to JSONIFY.
+    Arguments:
+        table: the table with the columns
+        columns: the names of the columns to get the types for
+    Returns:
+        The types of the named columns, or the types of call columns if columns = []
+
+    '''
+    if columns == []:
+        return table.column_types()
+    return [column["type"] for column in table.schema if column["name"] in columns]
+    
+
+
 
 # @data_plane_server_blueprint.route('/echo_post', methods=['POST'])
 # def echo_post():
@@ -134,16 +221,22 @@ def get_filtered_rows():
     '''
     try:
         data = request.get_json()
-        filter_spec = data["filter"]
-        table_name = data["table"]
-        columns = table["columns"]
+        filter_spec =  data["filter"] if 'filter' in data else None
+        columns =  data["columns"] if 'columns' in data else []
+        try:
+            table_name = data["table"]
+        except KeyError:
+            _log_and_abort('table is a required parameter to get filtererd rows', 400)
+        
     except JSONDecodeError as error:
         _log_and_abort(f'Bad arguments to /get_filtered_rows.  Error {error.msg}')
     table = _table_server_if_authorized('/get_filtered_rows', table_name)
     if columns is None: columns = []
+    if not isinstance(columns, list):
+        _log_and_abort(f'Columns to /get_filtered_rows must be a list of strings, not {columns}, 400')
     # Make sure that the columns are all valid columns of this table
     names = table.column_names()
-    bad_columns = [column for column in columns if columns not in names]
+    bad_columns = [column for column in columns if column not in names]
     if (len(bad_columns) > 0):
         _log_and_abort(f'Bad Columns {bad_columns} sent to /get_filtered_rows, table {table_name}', 400)
     
@@ -153,11 +246,14 @@ def get_filtered_rows():
     if filter_spec is not None:
         try:
             check_valid_spec(filter_spec)
-            return jsonify(table.get_filtered_rows(filter_spec = filter_spec, columns = columns))
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
-    else:
-        return jsonify(table.get_rows(columns=columns))
+    result = table.get_filtered_rows(filter_spec = filter_spec, columns = columns)
+    types = _column_types(table, columns)
+    jsonifiable_result = _jsonifiable_rows_(result, types)
+
+    return jsonify(jsonifiable_result)
+        
 
 
 def _check_required_parameters(route, required_parameters):
@@ -170,7 +266,7 @@ def _check_required_parameters(route, required_parameters):
     '''
     missing = [parameter for parameter in required_parameters if request.args.get(parameter) is None]
     if len(missing) > 0:
-        parameter_string = f'parameters {set(missing)}' if len(missing) > 1 else f'parameter {missing[0]}'
+        parameter_string = f'parameters {set(missing)} ' if len(missing) > 1 else f'parameter {missing[0]} '
         msg = 'Missing ' + parameter_string + f'for route {route}'
         _log_and_abort(msg, 400)
 
@@ -189,7 +285,13 @@ def get_range_spec():
     column_name =  request.args.get('column_name')
     table_name = request.args.get('table_name')
     try:
-        return table_server.get_range_spec(table_name, column_name, request.headers)
+        result = table_server.get_range_spec(table_name, column_name, request.headers)
+        type = _column_type(table_name, column_name)
+        jsonifiable_result = {
+            "max_val": _jsonifiable_value(result["max_val"], type),
+            "min_val": _jsonifiable_value(result["min_val"], type),
+        }
+        return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
         _log_and_abort(f'Access to table {table_name} not authorized, request /get_range_spec', 403)
     except TableNotFoundException:
@@ -212,7 +314,10 @@ def get_all_values():
     column_name =  request.args.get('column_name')
     table_name = request.args.get('table_name')
     try:
-        return table_server.get_all_values(table_name, column_name, request.headers)
+        result = table_server.get_all_values(table_name, column_name, request.headers)
+        type = _column_type(table_name, column_name)
+        jsonifiable_result = _jsonifiable_column(result, type)
+        return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
         _log_and_abort(f'Access to table {table_name} not authorized, request /get_all_values', 403)
     except TableNotFoundException:
