@@ -1,0 +1,2154 @@
+State,Year,Margin
+string, number, number
+Nationwide,2020,7
+Nationwide,2016,6
+Nationwide,2012,7
+Nationwide,2008,9
+Nationwide,2004,-6
+Nationwide,2000,5
+Nationwide,1996,9
+Nationwide,1992,8
+Nationwide,1988,-9
+Nationwide,1984,-10
+Nationwide,1980,-10
+Nationwide,1976,6
+Nationwide,1972,-10
+Nationwide,1968,-5
+Nationwide,1964,10
+Nationwide,1960,5
+Nationwide,1956,-10
+Nationwide,1952,-10
+Nationwide,1948,7
+Nationwide,1944,9
+Nationwide,1940,10
+Nationwide,1936,10
+Nationwide,1932,10
+Nationwide,1928,-10
+Nationwide,1924,-10
+Nationwide,1920,-10
+Nationwide,1916,7
+Nationwide,1912,10
+Nationwide,1908,-9
+Nationwide,1904,-10
+Nationwide,1900,-8
+Nationwide,1896,-7
+Nationwide,1892,7
+Nationwide,1888,5
+Nationwide,1884,5
+Nationwide,1880,-5
+Nationwide,1876,7
+Nationwide,1872,-10
+Nationwide,1868,-8
+Nationwide,1864,-10
+Nationwide,1860,-10
+Nationwide,1856,10
+Nationwide,1852,8
+Nationwide,1848,-7
+Nationwide,1844,6
+Nationwide,1840,-8
+Nationwide,1836,10
+Nationwide,1832,10
+Nationwide,1828,10
+Alabama,2020,-10
+Alabama,2016,-10
+Alabama,2012,-10
+Alabama,2008,-10
+Alabama,2004,-10
+Alabama,2000,-10
+Alabama,1996,-8
+Alabama,1992,-8
+Alabama,1988,-10
+Alabama,1984,-10
+Alabama,1980,-6
+Alabama,1976,10
+Alabama,1972,-10
+Alabama,1968,0
+Alabama,1964,-10
+Alabama,1960,10
+Alabama,1956,10
+Alabama,1952,10
+Alabama,1948,0
+Alabama,1944,10
+Alabama,1940,10
+Alabama,1936,10
+Alabama,1932,10
+Alabama,1928,6
+Alabama,1924,10
+Alabama,1920,10
+Alabama,1916,10
+Alabama,1912,10
+Alabama,1908,10
+Alabama,1904,10
+Alabama,1900,10
+Alabama,1896,10
+Alabama,1892,10
+Alabama,1888,10
+Alabama,1884,10
+Alabama,1880,10
+Alabama,1876,10
+Alabama,1872,-8
+Alabama,1868,-6
+Alabama,1860,0
+Alabama,1856,10
+Alabama,1852,10
+Alabama,1848,6
+Alabama,1844,10
+Alabama,1840,9
+Alabama,1836,10
+Alabama,1832,10
+Alabama,1828,10
+Alaska,2020,-10
+Alaska,2016,-10
+Alaska,2012,-10
+Alaska,2008,-10
+Alaska,2004,-10
+Alaska,2000,-10
+Alaska,1996,-10
+Alaska,1992,-10
+Alaska,1988,-10
+Alaska,1984,-10
+Alaska,1980,-10
+Alaska,1976,-10
+Alaska,1972,-10
+Alaska,1968,-6
+Alaska,1964,10
+Alaska,1960,-6
+Arizona,2020,5
+Arizona,2016,-7
+Arizona,2012,-10
+Arizona,2008,-9
+Arizona,2004,-10
+Arizona,2000,-8
+Arizona,1996,6
+Arizona,1992,-6
+Arizona,1988,-10
+Arizona,1984,-10
+Arizona,1980,-10
+Arizona,1976,-10
+Arizona,1972,-10
+Arizona,1968,-10
+Arizona,1964,-5
+Arizona,1960,-10
+Arizona,1956,-10
+Arizona,1952,-10
+Arizona,1948,10
+Arizona,1944,10
+Arizona,1940,10
+Arizona,1936,10
+Arizona,1932,10
+Arizona,1928,-10
+Arizona,1924,-8
+Arizona,1920,-10
+Arizona,1916,10
+Arizona,1912,10
+Arkansas,2020,-10
+Arkansas,2016,-10
+Arkansas,2012,-10
+Arkansas,2008,-10
+Arkansas,2004,-10
+Arkansas,2000,-8
+Arkansas,1996,10
+Arkansas,1992,10
+Arkansas,1988,-10
+Arkansas,1984,-10
+Arkansas,1980,-5
+Arkansas,1976,10
+Arkansas,1972,-10
+Arkansas,1968,0
+Arkansas,1964,10
+Arkansas,1960,9
+Arkansas,1956,8
+Arkansas,1952,10
+Arkansas,1948,10
+Arkansas,1944,10
+Arkansas,1940,10
+Arkansas,1936,10
+Arkansas,1932,10
+Arkansas,1928,10
+Arkansas,1924,10
+Arkansas,1920,10
+Arkansas,1916,10
+Arkansas,1912,10
+Arkansas,1908,10
+Arkansas,1904,10
+Arkansas,1900,10
+Arkansas,1896,10
+Arkansas,1892,10
+Arkansas,1888,10
+Arkansas,1884,10
+Arkansas,1880,10
+Arkansas,1876,10
+Arkansas,1872,-7
+Arkansas,1868,-9
+Arkansas,1860,0
+Arkansas,1856,10
+Arkansas,1852,10
+Arkansas,1848,10
+Arkansas,1844,10
+Arkansas,1840,10
+Arkansas,1836,10
+California,2020,10
+California,2016,10
+California,2012,10
+California,2008,10
+California,2004,10
+California,2000,10
+California,1996,10
+California,1992,10
+California,1988,-7
+California,1984,-10
+California,1980,-10
+California,1976,-6
+California,1972,-10
+California,1968,-7
+California,1964,10
+California,1960,-5
+California,1956,-10
+California,1952,-10
+California,1948,5
+California,1944,10
+California,1940,10
+California,1936,10
+California,1932,10
+California,1928,-10
+California,1924,-10
+California,1920,-10
+California,1916,5
+California,1912,0
+California,1908,-10
+California,1904,-10
+California,1900,-10
+California,1896,-5
+California,1892,5
+California,1888,-6
+California,1884,-8
+California,1880,5
+California,1876,-6
+California,1872,-10
+California,1868,-5
+California,1864,-10
+California,1860,-5
+California,1856,10
+California,1852,8
+Colorado,2020,10
+Colorado,2016,7
+Colorado,2012,8
+Colorado,2008,9
+Colorado,2004,-7
+Colorado,2000,-9
+Colorado,1996,-6
+Colorado,1992,7
+Colorado,1988,-9
+Colorado,1984,-10
+Colorado,1980,-10
+Colorado,1976,-10
+Colorado,1972,-10
+Colorado,1968,-10
+Colorado,1964,10
+Colorado,1960,-10
+Colorado,1956,-10
+Colorado,1952,-10
+Colorado,1948,8
+Colorado,1944,-8
+Colorado,1940,-6
+Colorado,1936,10
+Colorado,1932,10
+Colorado,1928,-10
+Colorado,1924,-10
+Colorado,1920,-10
+Colorado,1916,10
+Colorado,1912,10
+Colorado,1908,6
+Colorado,1904,-10
+Colorado,1900,10
+Colorado,1896,10
+Colorado,1892,0
+Colorado,1888,-10
+Colorado,1884,-10
+Colorado,1880,-8
+Connecticut,2020,10
+Connecticut,2016,10
+Connecticut,2012,10
+Connecticut,2008,10
+Connecticut,2004,10
+Connecticut,2000,10
+Connecticut,1996,10
+Connecticut,1992,8
+Connecticut,1988,-8
+Connecticut,1984,-10
+Connecticut,1980,-10
+Connecticut,1976,-8
+Connecticut,1972,-10
+Connecticut,1968,8
+Connecticut,1964,10
+Connecticut,1960,9
+Connecticut,1956,-10
+Connecticut,1952,-10
+Connecticut,1948,-6
+Connecticut,1944,8
+Connecticut,1940,9
+Connecticut,1936,10
+Connecticut,1932,-6
+Connecticut,1928,-9
+Connecticut,1924,-10
+Connecticut,1920,-10
+Connecticut,1916,-7
+Connecticut,1912,7
+Connecticut,1908,-10
+Connecticut,1904,-10
+Connecticut,1900,-10
+Connecticut,1896,-10
+Connecticut,1892,7
+Connecticut,1888,5
+Connecticut,1884,5
+Connecticut,1880,-6
+Connecticut,1876,6
+Connecticut,1872,-7
+Connecticut,1868,-6
+Connecticut,1864,-6
+Connecticut,1860,-10
+Connecticut,1856,-10
+Connecticut,1852,7
+Connecticut,1848,-8
+Connecticut,1844,-7
+Connecticut,1840,-10
+Connecticut,1836,6
+Connecticut,1832,-10
+Connecticut,1828,-10
+Delaware,2020,10
+Delaware,2016,10
+Delaware,2012,10
+Delaware,2008,10
+Delaware,2004,9
+Delaware,2000,10
+Delaware,1996,10
+Delaware,1992,9
+Delaware,1988,-10
+Delaware,1984,-10
+Delaware,1980,-6
+Delaware,1976,8
+Delaware,1972,-10
+Delaware,1968,-7
+Delaware,1964,10
+Delaware,1960,6
+Delaware,1956,-10
+Delaware,1952,-7
+Delaware,1948,-6
+Delaware,1944,10
+Delaware,1940,10
+Delaware,1936,10
+Delaware,1932,-6
+Delaware,1928,-10
+Delaware,1924,-10
+Delaware,1920,-10
+Delaware,1916,-6
+Delaware,1912,10
+Delaware,1908,-8
+Delaware,1904,-10
+Delaware,1900,-9
+Delaware,1896,-10
+Delaware,1892,6
+Delaware,1888,10
+Delaware,1884,10
+Delaware,1880,7
+Delaware,1876,10
+Delaware,1872,-7
+Delaware,1868,10
+Delaware,1864,7
+Delaware,1860,0
+Delaware,1856,10
+Delaware,1852,5
+Delaware,1848,-7
+Delaware,1844,-6
+Delaware,1840,-10
+Delaware,1836,-8
+Delaware,1832,-6
+Florida,2020,-7
+Florida,2016,-6
+Florida,2012,5
+Florida,2008,6
+Florida,2004,-8
+Florida,2000,-5
+Florida,1996,8
+Florida,1992,-6
+Florida,1988,-10
+Florida,1984,-10
+Florida,1980,-10
+Florida,1976,8
+Florida,1972,-10
+Florida,1968,-10
+Florida,1964,6
+Florida,1960,-7
+Florida,1956,-10
+Florida,1952,-10
+Florida,1948,10
+Florida,1944,10
+Florida,1940,10
+Florida,1936,10
+Florida,1932,10
+Florida,1928,-10
+Florida,1924,10
+Florida,1920,10
+Florida,1916,10
+Florida,1912,10
+Florida,1908,10
+Florida,1904,10
+Florida,1900,10
+Florida,1896,10
+Florida,1892,10
+Florida,1888,10
+Florida,1884,8
+Florida,1880,9
+Florida,1876,-6
+Florida,1872,-9
+Florida,1860,0
+Florida,1856,10
+Florida,1852,10
+Florida,1848,-10
+Georgia,2020,5
+Georgia,2016,-8
+Georgia,2012,-9
+Georgia,2008,-8
+Georgia,2004,-10
+Georgia,2000,-10
+Georgia,1996,-6
+Georgia,1992,5
+Georgia,1988,-10
+Georgia,1984,-10
+Georgia,1980,10
+Georgia,1976,10
+Georgia,1972,-10
+Georgia,1968,0
+Georgia,1964,-9
+Georgia,1960,10
+Georgia,1956,10
+Georgia,1952,10
+Georgia,1948,10
+Georgia,1944,10
+Georgia,1940,10
+Georgia,1936,10
+Georgia,1932,10
+Georgia,1928,10
+Georgia,1924,10
+Georgia,1920,10
+Georgia,1916,10
+Georgia,1912,10
+Georgia,1908,10
+Georgia,1904,10
+Georgia,1900,10
+Georgia,1896,10
+Georgia,1892,10
+Georgia,1888,10
+Georgia,1884,10
+Georgia,1880,10
+Georgia,1876,10
+Georgia,1872,10
+Georgia,1868,10
+Georgia,1860,0
+Georgia,1856,10
+Georgia,1852,10
+Georgia,1848,-6
+Georgia,1844,6
+Georgia,1840,-10
+Georgia,1836,-7
+Georgia,1832,10
+Georgia,1828,10
+Hawaii,2020,10
+Hawaii,2016,10
+Hawaii,2012,10
+Hawaii,2008,10
+Hawaii,2004,9
+Hawaii,2000,10
+Hawaii,1996,10
+Hawaii,1992,10
+Hawaii,1988,10
+Hawaii,1984,-10
+Hawaii,1980,6
+Hawaii,1976,6
+Hawaii,1972,-10
+Hawaii,1968,10
+Hawaii,1964,10
+Hawaii,1960,5
+Idaho,2020,-10
+Idaho,2016,-10
+Idaho,2012,-10
+Idaho,2008,-10
+Idaho,2004,-10
+Idaho,2000,-10
+Idaho,1996,-10
+Idaho,1992,-10
+Idaho,1988,-10
+Idaho,1984,-10
+Idaho,1980,-10
+Idaho,1976,-10
+Idaho,1972,-10
+Idaho,1968,-10
+Idaho,1964,6
+Idaho,1960,-9
+Idaho,1956,-10
+Idaho,1952,-10
+Idaho,1948,6
+Idaho,1944,7
+Idaho,1940,10
+Idaho,1936,10
+Idaho,1932,10
+Idaho,1928,-10
+Idaho,1924,-10
+Idaho,1920,-10
+Idaho,1916,10
+Idaho,1912,6
+Idaho,1908,-10
+Idaho,1904,-10
+Idaho,1900,7
+Idaho,1896,10
+Idaho,1892,0
+Illinois,2020,10
+Illinois,2016,10
+Illinois,2012,10
+Illinois,2008,10
+Illinois,2004,10
+Illinois,2000,10
+Illinois,1996,10
+Illinois,1992,10
+Illinois,1988,-6
+Illinois,1984,-10
+Illinois,1980,-9
+Illinois,1976,-6
+Illinois,1972,-10
+Illinois,1968,-6
+Illinois,1964,10
+Illinois,1960,5
+Illinois,1956,-10
+Illinois,1952,-10
+Illinois,1948,5
+Illinois,1944,7
+Illinois,1940,6
+Illinois,1936,10
+Illinois,1932,10
+Illinois,1928,-10
+Illinois,1924,-10
+Illinois,1920,-10
+Illinois,1916,-10
+Illinois,1912,10
+Illinois,1908,-10
+Illinois,1904,-10
+Illinois,1900,-9
+Illinois,1896,-10
+Illinois,1892,7
+Illinois,1888,-6
+Illinois,1884,-7
+Illinois,1880,-8
+Illinois,1876,-7
+Illinois,1872,-10
+Illinois,1868,-10
+Illinois,1864,-9
+Illinois,1860,-7
+Illinois,1856,7
+Illinois,1852,10
+Illinois,1848,6
+Illinois,1844,10
+Illinois,1840,6
+Illinois,1836,10
+Illinois,1832,10
+Illinois,1828,10
+Indiana,2020,-10
+Indiana,2016,-10
+Indiana,2012,-10
+Indiana,2008,6
+Indiana,2004,-10
+Indiana,2000,-10
+Indiana,1996,-8
+Indiana,1992,-8
+Indiana,1988,-10
+Indiana,1984,-10
+Indiana,1980,-10
+Indiana,1976,-9
+Indiana,1972,-10
+Indiana,1968,-10
+Indiana,1964,10
+Indiana,1960,-10
+Indiana,1956,-10
+Indiana,1952,-10
+Indiana,1948,-5
+Indiana,1944,-8
+Indiana,1940,-6
+Indiana,1936,10
+Indiana,1932,10
+Indiana,1928,-10
+Indiana,1924,-10
+Indiana,1920,-10
+Indiana,1916,-5
+Indiana,1912,10
+Indiana,1908,-6
+Indiana,1904,-10
+Indiana,1900,-7
+Indiana,1896,-6
+Indiana,1892,6
+Indiana,1888,-5
+Indiana,1884,6
+Indiana,1880,-6
+Indiana,1876,6
+Indiana,1872,-8
+Indiana,1868,-6
+Indiana,1864,-9
+Indiana,1860,-9
+Indiana,1856,10
+Indiana,1852,9
+Indiana,1848,7
+Indiana,1844,6
+Indiana,1840,-10
+Indiana,1836,-10
+Indiana,1832,10
+Indiana,1828,10
+Iowa,2020,-9
+Iowa,2016,-10
+Iowa,2012,8
+Iowa,2008,10
+Iowa,2004,-5
+Iowa,2000,5
+Iowa,1996,10
+Iowa,1992,8
+Iowa,1988,10
+Iowa,1984,-9
+Iowa,1980,-10
+Iowa,1976,-6
+Iowa,1972,-10
+Iowa,1968,-10
+Iowa,1964,10
+Iowa,1960,-10
+Iowa,1956,-10
+Iowa,1952,-10
+Iowa,1948,6
+Iowa,1944,-7
+Iowa,1940,-7
+Iowa,1936,10
+Iowa,1932,10
+Iowa,1928,-10
+Iowa,1924,-10
+Iowa,1920,-10
+Iowa,1916,-10
+Iowa,1912,10
+Iowa,1908,-10
+Iowa,1904,-10
+Iowa,1900,-10
+Iowa,1896,-10
+Iowa,1892,-8
+Iowa,1888,-9
+Iowa,1884,-8
+Iowa,1880,-10
+Iowa,1876,-10
+Iowa,1872,-10
+Iowa,1868,-10
+Iowa,1864,-10
+Iowa,1860,-10
+Iowa,1856,-9
+Iowa,1852,8
+Iowa,1848,8
+Kansas,2020,-10
+Kansas,2016,-10
+Kansas,2012,-10
+Kansas,2008,-10
+Kansas,2004,-10
+Kansas,2000,-10
+Kansas,1996,-10
+Kansas,1992,-8
+Kansas,1988,-10
+Kansas,1984,-10
+Kansas,1980,-10
+Kansas,1976,-9
+Kansas,1972,-10
+Kansas,1968,-10
+Kansas,1964,10
+Kansas,1960,-10
+Kansas,1956,-10
+Kansas,1952,-10
+Kansas,1948,-10
+Kansas,1944,-10
+Kansas,1940,-10
+Kansas,1936,9
+Kansas,1932,10
+Kansas,1928,-10
+Kansas,1924,-10
+Kansas,1920,-10
+Kansas,1916,8
+Kansas,1912,10
+Kansas,1908,-10
+Kansas,1904,-10
+Kansas,1900,-8
+Kansas,1896,7
+Kansas,1892,0
+Kansas,1888,-10
+Kansas,1884,-10
+Kansas,1880,-10
+Kansas,1876,-10
+Kansas,1872,-10
+Kansas,1868,-10
+Kansas,1864,-10
+Kentucky,2020,-10
+Kentucky,2016,-10
+Kentucky,2012,-10
+Kentucky,2008,-10
+Kentucky,2004,-10
+Kentucky,2000,-10
+Kentucky,1996,5
+Kentucky,1992,7
+Kentucky,1988,-10
+Kentucky,1984,-10
+Kentucky,1980,-6
+Kentucky,1976,9
+Kentucky,1972,-10
+Kentucky,1968,-8
+Kentucky,1964,10
+Kentucky,1960,-9
+Kentucky,1956,-10
+Kentucky,1952,5
+Kentucky,1948,10
+Kentucky,1944,10
+Kentucky,1940,10
+Kentucky,1936,10
+Kentucky,1932,10
+Kentucky,1928,-10
+Kentucky,1924,-6
+Kentucky,1920,5
+Kentucky,1916,8
+Kentucky,1912,10
+Kentucky,1908,6
+Kentucky,1904,6
+Kentucky,1900,6
+Kentucky,1896,-5
+Kentucky,1892,10
+Kentucky,1888,9
+Kentucky,1884,10
+Kentucky,1880,10
+Kentucky,1876,10
+Kentucky,1872,8
+Kentucky,1868,10
+Kentucky,1864,10
+Kentucky,1860,0
+Kentucky,1856,10
+Kentucky,1852,-7
+Kentucky,1848,-10
+Kentucky,1844,-9
+Kentucky,1840,-10
+Kentucky,1836,-8
+Kentucky,1832,-9
+Kentucky,1828,10
+Louisiana,2020,-10
+Louisiana,2016,-10
+Louisiana,2012,-10
+Louisiana,2008,-10
+Louisiana,2004,-10
+Louisiana,2000,-9
+Louisiana,1996,10
+Louisiana,1992,7
+Louisiana,1988,-10
+Louisiana,1984,-10
+Louisiana,1980,-8
+Louisiana,1976,8
+Louisiana,1972,-10
+Louisiana,1968,0
+Louisiana,1964,-10
+Louisiana,1960,10
+Louisiana,1956,-10
+Louisiana,1952,8
+Louisiana,1948,0
+Louisiana,1944,10
+Louisiana,1940,10
+Louisiana,1936,10
+Louisiana,1932,10
+Louisiana,1928,10
+Louisiana,1924,10
+Louisiana,1920,10
+Louisiana,1916,10
+Louisiana,1912,10
+Louisiana,1908,10
+Louisiana,1904,10
+Louisiana,1900,10
+Louisiana,1896,10
+Louisiana,1892,10
+Louisiana,1888,10
+Louisiana,1884,10
+Louisiana,1880,10
+Louisiana,1876,-7
+Louisiana,1872,-10
+Louisiana,1868,10
+Louisiana,1860,0
+Louisiana,1856,10
+Louisiana,1852,7
+Louisiana,1848,-10
+Louisiana,1844,6
+Louisiana,1840,-10
+Louisiana,1836,7
+Louisiana,1832,10
+Louisiana,1828,8
+Maine,2020,10
+Maine,2016,6
+Maine,2012,10
+Maine,2008,10
+Maine,2004,9
+Maine,2000,8
+Maine,1996,10
+Maine,1992,9
+Maine,1988,-10
+Maine,1984,-10
+Maine,1980,-7
+Maine,1976,-5
+Maine,1972,-10
+Maine,1968,10
+Maine,1964,10
+Maine,1960,-10
+Maine,1956,-10
+Maine,1952,-10
+Maine,1948,-10
+Maine,1944,-7
+Maine,1940,-6
+Maine,1936,-10
+Maine,1932,-10
+Maine,1928,-10
+Maine,1924,-10
+Maine,1920,-10
+Maine,1916,-7
+Maine,1912,10
+Maine,1908,-10
+Maine,1904,-10
+Maine,1900,-10
+Maine,1896,-10
+Maine,1892,-10
+Maine,1888,-10
+Maine,1884,-10
+Maine,1880,-8
+Maine,1876,-10
+Maine,1872,-10
+Maine,1868,-10
+Maine,1864,-10
+Maine,1860,-10
+Maine,1856,-10
+Maine,1852,10
+Maine,1848,8
+Maine,1844,10
+Maine,1840,-5
+Maine,1836,10
+Maine,1832,10
+Maine,1828,-10
+Maryland,2020,10
+Maryland,2016,10
+Maryland,2012,10
+Maryland,2008,10
+Maryland,2004,10
+Maryland,2000,10
+Maryland,1996,10
+Maryland,1992,10
+Maryland,1988,-6
+Maryland,1984,-8
+Maryland,1980,6
+Maryland,1976,8
+Maryland,1972,-10
+Maryland,1968,6
+Maryland,1964,10
+Maryland,1960,9
+Maryland,1956,-10
+Maryland,1952,-10
+Maryland,1948,-6
+Maryland,1944,7
+Maryland,1940,10
+Maryland,1936,10
+Maryland,1932,10
+Maryland,1928,-10
+Maryland,1924,-7
+Maryland,1920,-10
+Maryland,1916,9
+Maryland,1912,10
+Maryland,1908,-5
+Maryland,1904,-5
+Maryland,1900,-8
+Maryland,1896,-10
+Maryland,1892,10
+Maryland,1888,6
+Maryland,1884,8
+Maryland,1880,9
+Maryland,1876,10
+Maryland,1872,5
+Maryland,1868,10
+Maryland,1864,-10
+Maryland,1860,0
+Maryland,1856,0
+Maryland,1852,8
+Maryland,1848,-7
+Maryland,1844,-7
+Maryland,1840,-9
+Maryland,1836,-9
+Maryland,1832,-5
+Maryland,1828,-5
+Massachusetts,2020,10
+Massachusetts,2016,10
+Massachusetts,2012,10
+Massachusetts,2008,10
+Massachusetts,2004,10
+Massachusetts,2000,10
+Massachusetts,1996,10
+Massachusetts,1992,10
+Massachusetts,1988,9
+Massachusetts,1984,-6
+Massachusetts,1980,-5
+Massachusetts,1976,10
+Massachusetts,1972,9
+Massachusetts,1968,10
+Massachusetts,1964,10
+Massachusetts,1960,10
+Massachusetts,1956,-10
+Massachusetts,1952,-9
+Massachusetts,1948,10
+Massachusetts,1944,8
+Massachusetts,1940,8
+Massachusetts,1936,10
+Massachusetts,1932,7
+Massachusetts,1928,6
+Massachusetts,1924,-10
+Massachusetts,1920,-10
+Massachusetts,1916,-7
+Massachusetts,1912,7
+Massachusetts,1908,-10
+Massachusetts,1904,-10
+Massachusetts,1900,-10
+Massachusetts,1896,-10
+Massachusetts,1892,-8
+Massachusetts,1888,-10
+Massachusetts,1884,-9
+Massachusetts,1880,-10
+Massachusetts,1876,-10
+Massachusetts,1872,-10
+Massachusetts,1868,-10
+Massachusetts,1864,-10
+Massachusetts,1860,-10
+Massachusetts,1856,-10
+Massachusetts,1852,-8
+Massachusetts,1848,-10
+Massachusetts,1844,-10
+Massachusetts,1840,-10
+Massachusetts,1836,-10
+Massachusetts,1832,-10
+Massachusetts,1828,-10
+Michigan,2020,6
+Michigan,2016,-5
+Michigan,2012,10
+Michigan,2008,10
+Michigan,2004,7
+Michigan,2000,8
+Michigan,1996,10
+Michigan,1992,9
+Michigan,1988,-9
+Michigan,1984,-10
+Michigan,1980,-8
+Michigan,1976,-8
+Michigan,1972,-10
+Michigan,1968,8
+Michigan,1964,10
+Michigan,1960,6
+Michigan,1956,-10
+Michigan,1952,-10
+Michigan,1948,-6
+Michigan,1944,6
+Michigan,1940,-5
+Michigan,1936,10
+Michigan,1932,9
+Michigan,1928,-10
+Michigan,1924,-10
+Michigan,1920,-10
+Michigan,1916,-9
+Michigan,1912,0
+Michigan,1908,-10
+Michigan,1904,-10
+Michigan,1900,-10
+Michigan,1896,-10
+Michigan,1892,-7
+Michigan,1888,-7
+Michigan,1884,-5
+Michigan,1880,-10
+Michigan,1876,-9
+Michigan,1872,-10
+Michigan,1868,-10
+Michigan,1864,-9
+Michigan,1860,-10
+Michigan,1856,-10
+Michigan,1852,10
+Michigan,1848,10
+Michigan,1844,8
+Michigan,1840,-7
+Michigan,1836,10
+Minnesota,2020,9
+Minnesota,2016,6
+Minnesota,2012,9
+Minnesota,2008,10
+Minnesota,2004,7
+Minnesota,2000,6
+Minnesota,1996,10
+Minnesota,1992,10
+Minnesota,1988,9
+Minnesota,1984,5
+Minnesota,1980,7
+Minnesota,1976,10
+Minnesota,1972,-8
+Minnesota,1968,10
+Minnesota,1964,10
+Minnesota,1960,6
+Minnesota,1956,-9
+Minnesota,1952,-10
+Minnesota,1948,10
+Minnesota,1944,8
+Minnesota,1940,7
+Minnesota,1936,10
+Minnesota,1932,10
+Minnesota,1928,-10
+Minnesota,1924,-10
+Minnesota,1920,-10
+Minnesota,1916,-5
+Minnesota,1912,0
+Minnesota,1908,-10
+Minnesota,1904,-10
+Minnesota,1900,-10
+Minnesota,1896,-10
+Minnesota,1892,-9
+Minnesota,1888,-10
+Minnesota,1884,-10
+Minnesota,1880,-10
+Minnesota,1876,-10
+Minnesota,1872,-10
+Minnesota,1868,-10
+Minnesota,1864,-10
+Minnesota,1860,-10
+Mississippi,2020,-10
+Mississippi,2016,-10
+Mississippi,2012,-10
+Mississippi,2008,-10
+Mississippi,2004,-10
+Mississippi,2000,-10
+Mississippi,1996,-8
+Mississippi,1992,-9
+Mississippi,1988,-10
+Mississippi,1984,-10
+Mississippi,1980,-6
+Mississippi,1976,6
+Mississippi,1972,-10
+Mississippi,1968,0
+Mississippi,1964,-10
+Mississippi,1960,0
+Mississippi,1956,10
+Mississippi,1952,10
+Mississippi,1948,0
+Mississippi,1944,10
+Mississippi,1940,10
+Mississippi,1936,10
+Mississippi,1932,10
+Mississippi,1928,10
+Mississippi,1924,10
+Mississippi,1920,10
+Mississippi,1916,10
+Mississippi,1912,10
+Mississippi,1908,10
+Mississippi,1904,10
+Mississippi,1900,10
+Mississippi,1896,10
+Mississippi,1892,10
+Mississippi,1888,10
+Mississippi,1884,10
+Mississippi,1880,10
+Mississippi,1876,10
+Mississippi,1872,-10
+Mississippi,1860,0
+Mississippi,1856,10
+Mississippi,1852,10
+Mississippi,1848,6
+Mississippi,1844,10
+Mississippi,1840,-8
+Mississippi,1836,6
+Mississippi,1832,10
+Mississippi,1828,10
+Missouri,2020,-10
+Missouri,2016,-10
+Missouri,2012,-10
+Missouri,2008,-5
+Missouri,2004,-9
+Missouri,2000,-7
+Missouri,1996,8
+Missouri,1992,10
+Missouri,1988,-7
+Missouri,1984,-10
+Missouri,1980,-8
+Missouri,1976,7
+Missouri,1972,-10
+Missouri,1968,-6
+Missouri,1964,10
+Missouri,1960,5
+Missouri,1956,5
+Missouri,1952,-6
+Missouri,1948,10
+Missouri,1944,6
+Missouri,1940,7
+Missouri,1936,10
+Missouri,1932,10
+Missouri,1928,-10
+Missouri,1924,-8
+Missouri,1920,-10
+Missouri,1916,7
+Missouri,1912,10
+Missouri,1908,-5
+Missouri,1904,-7
+Missouri,1900,8
+Missouri,1896,9
+Missouri,1892,9
+Missouri,1888,7
+Missouri,1884,9
+Missouri,1880,10
+Missouri,1876,10
+Missouri,1872,10
+Missouri,1868,-10
+Missouri,1864,-10
+Missouri,1860,10
+Missouri,1856,10
+Missouri,1852,10
+Missouri,1848,10
+Missouri,1844,10
+Missouri,1840,10
+Missouri,1836,10
+Missouri,1832,10
+Missouri,1828,10
+Montana,2020,-10
+Montana,2016,-10
+Montana,2012,-10
+Montana,2008,-6
+Montana,2004,-10
+Montana,2000,-10
+Montana,1996,-6
+Montana,1992,6
+Montana,1988,-8
+Montana,1984,-10
+Montana,1980,-10
+Montana,1976,-9
+Montana,1972,-10
+Montana,1968,-10
+Montana,1964,10
+Montana,1960,-6
+Montana,1956,-10
+Montana,1952,-10
+Montana,1948,10
+Montana,1944,10
+Montana,1940,10
+Montana,1936,10
+Montana,1932,10
+Montana,1928,-10
+Montana,1924,-10
+Montana,1920,-10
+Montana,1916,10
+Montana,1912,10
+Montana,1908,-7
+Montana,1904,-10
+Montana,1900,10
+Montana,1896,10
+Montana,1892,-6
+Nebraska,2020,-10
+Nebraska,2016,-10
+Nebraska,2012,-10
+Nebraska,2008,-10
+Nebraska,2004,-10
+Nebraska,2000,-10
+Nebraska,1996,-10
+Nebraska,1992,-10
+Nebraska,1988,-10
+Nebraska,1984,-10
+Nebraska,1980,-10
+Nebraska,1976,-10
+Nebraska,1972,-10
+Nebraska,1968,-10
+Nebraska,1964,8
+Nebraska,1960,-10
+Nebraska,1956,-10
+Nebraska,1952,-10
+Nebraska,1948,-9
+Nebraska,1944,-10
+Nebraska,1940,-10
+Nebraska,1936,10
+Nebraska,1932,10
+Nebraska,1928,-10
+Nebraska,1924,-10
+Nebraska,1920,-10
+Nebraska,1916,10
+Nebraska,1912,10
+Nebraska,1908,6
+Nebraska,1904,-10
+Nebraska,1900,-7
+Nebraska,1896,8
+Nebraska,1892,-10
+Nebraska,1888,-10
+Nebraska,1884,-10
+Nebraska,1880,-10
+Nebraska,1876,-10
+Nebraska,1872,-10
+Nebraska,1868,-10
+Nevada,2020,6
+Nevada,2016,6
+Nevada,2012,8
+Nevada,2008,10
+Nevada,2004,-6
+Nevada,2000,-7
+Nevada,1996,6
+Nevada,1992,6
+Nevada,1988,-10
+Nevada,1984,-10
+Nevada,1980,-10
+Nevada,1976,-7
+Nevada,1972,-10
+Nevada,1968,-9
+Nevada,1964,10
+Nevada,1960,6
+Nevada,1956,-10
+Nevada,1952,-10
+Nevada,1948,7
+Nevada,1944,10
+Nevada,1940,10
+Nevada,1936,10
+Nevada,1932,10
+Nevada,1928,-10
+Nevada,1924,-10
+Nevada,1920,-10
+Nevada,1916,10
+Nevada,1912,10
+Nevada,1908,6
+Nevada,1904,-10
+Nevada,1900,10
+Nevada,1896,10
+Nevada,1892,0
+Nevada,1888,-10
+Nevada,1884,-10
+Nevada,1880,7
+Nevada,1876,-8
+Nevada,1872,-10
+Nevada,1868,-10
+Nevada,1864,-10
+New Hampshire,2020,9
+New Hampshire,2016,5
+New Hampshire,2012,8
+New Hampshire,2008,10
+New Hampshire,2004,6
+New Hampshire,2000,-6
+New Hampshire,1996,10
+New Hampshire,1992,6
+New Hampshire,1988,-10
+New Hampshire,1984,-10
+New Hampshire,1980,-10
+New Hampshire,1976,-10
+New Hampshire,1972,-10
+New Hampshire,1968,-9
+New Hampshire,1964,10
+New Hampshire,1960,-8
+New Hampshire,1956,-10
+New Hampshire,1952,-10
+New Hampshire,1948,-8
+New Hampshire,1944,7
+New Hampshire,1940,8
+New Hampshire,1936,6
+New Hampshire,1932,-6
+New Hampshire,1928,-10
+New Hampshire,1924,-10
+New Hampshire,1920,-10
+New Hampshire,1916,5
+New Hampshire,1912,6
+New Hampshire,1908,-10
+New Hampshire,1904,-10
+New Hampshire,1900,-10
+New Hampshire,1896,-10
+New Hampshire,1892,-7
+New Hampshire,1888,-6
+New Hampshire,1884,-7
+New Hampshire,1880,-7
+New Hampshire,1876,-7
+New Hampshire,1872,-9
+New Hampshire,1868,-10
+New Hampshire,1864,-8
+New Hampshire,1860,-10
+New Hampshire,1856,-9
+New Hampshire,1852,10
+New Hampshire,1848,10
+New Hampshire,1844,10
+New Hampshire,1840,10
+New Hampshire,1836,10
+New Hampshire,1832,10
+New Hampshire,1828,-9
+New Jersey,2020,10
+New Jersey,2016,10
+New Jersey,2012,10
+New Jersey,2008,10
+New Jersey,2004,8
+New Jersey,2000,10
+New Jersey,1996,10
+New Jersey,1992,6
+New Jersey,1988,-10
+New Jersey,1984,-10
+New Jersey,1980,-10
+New Jersey,1976,-6
+New Jersey,1972,-10
+New Jersey,1968,-6
+New Jersey,1964,10
+New Jersey,1960,5
+New Jersey,1956,-10
+New Jersey,1952,-10
+New Jersey,1948,-7
+New Jersey,1944,6
+New Jersey,1940,7
+New Jersey,1936,10
+New Jersey,1932,6
+New Jersey,1928,-10
+New Jersey,1924,-10
+New Jersey,1920,-10
+New Jersey,1916,-10
+New Jersey,1912,10
+New Jersey,1908,-10
+New Jersey,1904,-10
+New Jersey,1900,-10
+New Jersey,1896,-10
+New Jersey,1892,7
+New Jersey,1888,6
+New Jersey,1884,6
+New Jersey,1880,5
+New Jersey,1876,8
+New Jersey,1872,-10
+New Jersey,1868,6
+New Jersey,1864,8
+New Jersey,1860,7
+New Jersey,1856,10
+New Jersey,1852,8
+New Jersey,1848,-7
+New Jersey,1844,-6
+New Jersey,1840,-7
+New Jersey,1836,-6
+New Jersey,1832,5
+New Jersey,1828,-7
+New Mexico,2020,10
+New Mexico,2016,9
+New Mexico,2012,10
+New Mexico,2008,10
+New Mexico,2004,-5
+New Mexico,2000,5
+New Mexico,1996,9
+New Mexico,1992,9
+New Mexico,1988,-7
+New Mexico,1984,-10
+New Mexico,1980,-10
+New Mexico,1976,-6
+New Mexico,1972,-10
+New Mexico,1968,-10
+New Mexico,1964,10
+New Mexico,1960,5
+New Mexico,1956,-10
+New Mexico,1952,-10
+New Mexico,1948,10
+New Mexico,1944,9
+New Mexico,1940,10
+New Mexico,1936,10
+New Mexico,1932,10
+New Mexico,1928,-10
+New Mexico,1924,-8
+New Mexico,1920,-10
+New Mexico,1916,7
+New Mexico,1912,8
+New York,2020,10
+New York,2016,10
+New York,2012,10
+New York,2008,10
+New York,2004,10
+New York,2000,10
+New York,1996,10
+New York,1992,10
+New York,1988,7
+New York,1984,-9
+New York,1980,-6
+New York,1976,7
+New York,1972,-10
+New York,1968,8
+New York,1964,10
+New York,1960,8
+New York,1956,-10
+New York,1952,-10
+New York,1948,-5
+New York,1944,8
+New York,1940,7
+New York,1936,10
+New York,1932,10
+New York,1928,-6
+New York,1924,-10
+New York,1920,-10
+New York,1916,-9
+New York,1912,10
+New York,1908,-10
+New York,1904,-10
+New York,1900,-10
+New York,1896,-10
+New York,1892,7
+New York,1888,-6
+New York,1884,5
+New York,1880,-6
+New York,1876,7
+New York,1872,-8
+New York,1868,6
+New York,1864,-5
+New York,1860,-9
+New York,1856,-10
+New York,1852,8
+New York,1848,-10
+New York,1844,6
+New York,1840,-7
+New York,1836,10
+New York,1832,7
+New York,1828,6
+North Carolina,2020,-6
+North Carolina,2016,-7
+North Carolina,2012,-6
+North Carolina,2008,5
+North Carolina,2004,-10
+North Carolina,2000,-10
+North Carolina,1996,-7
+North Carolina,1992,-5
+North Carolina,1988,-10
+North Carolina,1984,-10
+North Carolina,1980,-6
+North Carolina,1976,10
+North Carolina,1972,-10
+North Carolina,1968,-10
+North Carolina,1964,10
+North Carolina,1960,7
+North Carolina,1956,6
+North Carolina,1952,9
+North Carolina,1948,10
+North Carolina,1944,10
+North Carolina,1940,10
+North Carolina,1936,10
+North Carolina,1932,10
+North Carolina,1928,-10
+North Carolina,1924,10
+North Carolina,1920,10
+North Carolina,1916,10
+North Carolina,1912,10
+North Carolina,1908,9
+North Carolina,1904,10
+North Carolina,1900,9
+North Carolina,1896,8
+North Carolina,1892,10
+North Carolina,1888,7
+North Carolina,1884,8
+North Carolina,1880,7
+North Carolina,1876,9
+North Carolina,1872,-10
+North Carolina,1868,-8
+North Carolina,1860,0
+North Carolina,1856,10
+North Carolina,1852,5
+North Carolina,1848,-10
+North Carolina,1844,-7
+North Carolina,1840,-10
+North Carolina,1836,8
+North Carolina,1832,10
+North Carolina,1828,10
+North Dakota,2020,-10
+North Dakota,2016,-10
+North Dakota,2012,-10
+North Dakota,2008,-9
+North Dakota,2004,-10
+North Dakota,2000,-10
+North Dakota,1996,-8
+North Dakota,1992,-10
+North Dakota,1988,-10
+North Dakota,1984,-10
+North Dakota,1980,-10
+North Dakota,1976,-8
+North Dakota,1972,-10
+North Dakota,1968,-10
+North Dakota,1964,10
+North Dakota,1960,-10
+North Dakota,1956,-10
+North Dakota,1952,-10
+North Dakota,1948,-9
+North Dakota,1944,-9
+North Dakota,1940,-10
+North Dakota,1936,10
+North Dakota,1932,10
+North Dakota,1928,-10
+North Dakota,1924,-10
+North Dakota,1920,-10
+North Dakota,1916,6
+North Dakota,1912,9
+North Dakota,1908,-10
+North Dakota,1904,-10
+North Dakota,1900,-10
+North Dakota,1896,-10
+North Dakota,1892,0
+Ohio,2020,-9
+Ohio,2016,-9
+Ohio,2012,6
+Ohio,2008,7
+Ohio,2004,-6
+Ohio,2000,-7
+Ohio,1996,8
+Ohio,1992,6
+Ohio,1988,-10
+Ohio,1984,-10
+Ohio,1980,-10
+Ohio,1976,5
+Ohio,1972,-10
+Ohio,1968,-6
+Ohio,1964,10
+Ohio,1960,-8
+Ohio,1956,-10
+Ohio,1952,-10
+Ohio,1948,5
+Ohio,1944,-5
+Ohio,1940,7
+Ohio,1936,10
+Ohio,1932,6
+Ohio,1928,-10
+Ohio,1924,-10
+Ohio,1920,-10
+Ohio,1916,9
+Ohio,1912,10
+Ohio,1908,-8
+Ohio,1904,-10
+Ohio,1900,-8
+Ohio,1896,-7
+Ohio,1892,-5
+Ohio,1888,-6
+Ohio,1884,-7
+Ohio,1880,-7
+Ohio,1876,-6
+Ohio,1872,-9
+Ohio,1868,-9
+Ohio,1864,-10
+Ohio,1860,-9
+Ohio,1856,-7
+Ohio,1852,7
+Ohio,1848,7
+Ohio,1844,-6
+Ohio,1840,-9
+Ohio,1836,-7
+Ohio,1832,6
+Ohio,1828,7
+Oklahoma,2020,-10
+Oklahoma,2016,-10
+Oklahoma,2012,-10
+Oklahoma,2008,-10
+Oklahoma,2004,-10
+Oklahoma,2000,-10
+Oklahoma,1996,-9
+Oklahoma,1992,-9
+Oklahoma,1988,-10
+Oklahoma,1984,-10
+Oklahoma,1980,-10
+Oklahoma,1976,-6
+Oklahoma,1972,-10
+Oklahoma,1968,-10
+Oklahoma,1964,10
+Oklahoma,1960,-10
+Oklahoma,1956,-10
+Oklahoma,1952,-10
+Oklahoma,1948,10
+Oklahoma,1944,10
+Oklahoma,1940,10
+Oklahoma,1936,10
+Oklahoma,1932,10
+Oklahoma,1928,-10
+Oklahoma,1924,8
+Oklahoma,1920,-8
+Oklahoma,1916,10
+Oklahoma,1912,10
+Oklahoma,1908,7
+Oregon,2020,10
+Oregon,2016,10
+Oregon,2012,10
+Oregon,2008,10
+Oregon,2004,7
+Oregon,2000,5
+Oregon,1996,9
+Oregon,1992,10
+Oregon,1988,7
+Oregon,1984,-10
+Oregon,1980,-10
+Oregon,1976,-5
+Oregon,1972,-10
+Oregon,1968,-8
+Oregon,1964,10
+Oregon,1960,-8
+Oregon,1956,-10
+Oregon,1952,-10
+Oregon,1948,-7
+Oregon,1944,7
+Oregon,1940,9
+Oregon,1936,10
+Oregon,1932,10
+Oregon,1928,-10
+Oregon,1924,-10
+Oregon,1920,-10
+Oregon,1916,-6
+Oregon,1912,10
+Oregon,1908,-10
+Oregon,1904,-10
+Oregon,1900,-10
+Oregon,1896,-6
+Oregon,1892,-10
+Oregon,1888,-10
+Oregon,1884,-7
+Oregon,1880,-6
+Oregon,1876,-7
+Oregon,1872,-10
+Oregon,1868,5
+Oregon,1864,-9
+Oregon,1860,-9
+Pennsylvania,2020,6
+Pennsylvania,2016,-5
+Pennsylvania,2012,8
+Pennsylvania,2008,10
+Pennsylvania,2004,6
+Pennsylvania,2000,7
+Pennsylvania,1996,10
+Pennsylvania,1992,10
+Pennsylvania,1988,-6
+Pennsylvania,1984,-9
+Pennsylvania,1980,-9
+Pennsylvania,1976,6
+Pennsylvania,1972,-10
+Pennsylvania,1968,7
+Pennsylvania,1964,10
+Pennsylvania,1960,6
+Pennsylvania,1956,-10
+Pennsylvania,1952,-8
+Pennsylvania,1948,-7
+Pennsylvania,1944,6
+Pennsylvania,1940,8
+Pennsylvania,1936,10
+Pennsylvania,1932,-8
+Pennsylvania,1928,-10
+Pennsylvania,1924,-10
+Pennsylvania,1920,-10
+Pennsylvania,1916,-10
+Pennsylvania,1912,0
+Pennsylvania,1908,-10
+Pennsylvania,1904,-10
+Pennsylvania,1900,-10
+Pennsylvania,1896,-10
+Pennsylvania,1892,-8
+Pennsylvania,1888,-9
+Pennsylvania,1884,-10
+Pennsylvania,1880,-7
+Pennsylvania,1876,-6
+Pennsylvania,1872,-10
+Pennsylvania,1868,-7
+Pennsylvania,1864,-7
+Pennsylvania,1860,-10
+Pennsylvania,1856,10
+Pennsylvania,1852,8
+Pennsylvania,1848,-7
+Pennsylvania,1844,6
+Pennsylvania,1840,-5
+Pennsylvania,1836,6
+Pennsylvania,1832,10
+Pennsylvania,1828,10
+Rhode Island,2020,10
+Rhode Island,2016,10
+Rhode Island,2012,10
+Rhode Island,2008,10
+Rhode Island,2004,10
+Rhode Island,2000,10
+Rhode Island,1996,10
+Rhode Island,1992,10
+Rhode Island,1988,10
+Rhode Island,1984,-7
+Rhode Island,1980,10
+Rhode Island,1976,10
+Rhode Island,1972,-8
+Rhode Island,1968,10
+Rhode Island,1964,10
+Rhode Island,1960,10
+Rhode Island,1956,-10
+Rhode Island,1952,-6
+Rhode Island,1948,10
+Rhode Island,1944,10
+Rhode Island,1940,10
+Rhode Island,1936,10
+Rhode Island,1932,10
+Rhode Island,1928,5
+Rhode Island,1924,-10
+Rhode Island,1920,-10
+Rhode Island,1916,-8
+Rhode Island,1912,7
+Rhode Island,1908,-10
+Rhode Island,1904,-10
+Rhode Island,1900,-10
+Rhode Island,1896,-10
+Rhode Island,1892,-7
+Rhode Island,1888,-10
+Rhode Island,1884,-10
+Rhode Island,1880,-10
+Rhode Island,1876,-10
+Rhode Island,1872,-10
+Rhode Island,1868,-10
+Rhode Island,1864,-10
+Rhode Island,1860,-10
+Rhode Island,1856,-10
+Rhode Island,1852,8
+Rhode Island,1848,-10
+Rhode Island,1844,-10
+Rhode Island,1840,-10
+Rhode Island,1836,7
+Rhode Island,1832,-10
+Rhode Island,1828,-10
+South Carolina,2020,-10
+South Carolina,2016,-10
+South Carolina,2012,-10
+South Carolina,2008,-9
+South Carolina,2004,-10
+South Carolina,2000,-10
+South Carolina,1996,-8
+South Carolina,1992,-9
+South Carolina,1988,-10
+South Carolina,1984,-10
+South Carolina,1980,-6
+South Carolina,1976,10
+South Carolina,1972,-10
+South Carolina,1968,-9
+South Carolina,1964,-10
+South Carolina,1960,6
+South Carolina,1956,10
+South Carolina,1952,6
+South Carolina,1948,0
+South Carolina,1944,10
+South Carolina,1940,10
+South Carolina,1936,10
+South Carolina,1932,10
+South Carolina,1928,10
+South Carolina,1924,10
+South Carolina,1920,10
+South Carolina,1916,10
+South Carolina,1912,10
+South Carolina,1908,10
+South Carolina,1904,10
+South Carolina,1900,10
+South Carolina,1896,10
+South Carolina,1892,10
+South Carolina,1888,10
+South Carolina,1884,10
+South Carolina,1880,10
+South Carolina,1876,-5
+South Carolina,1872,-10
+South Carolina,1868,-10
+South Dakota,2020,-10
+South Dakota,2016,-10
+South Dakota,2012,-10
+South Dakota,2008,-9
+South Dakota,2004,-10
+South Dakota,2000,-10
+South Dakota,1996,-7
+South Dakota,1992,-7
+South Dakota,1988,-8
+South Dakota,1984,-10
+South Dakota,1980,-10
+South Dakota,1976,-6
+South Dakota,1972,-9
+South Dakota,1968,-10
+South Dakota,1964,10
+South Dakota,1960,-10
+South Dakota,1956,-10
+South Dakota,1952,-10
+South Dakota,1948,-7
+South Dakota,1944,-10
+South Dakota,1940,-10
+South Dakota,1936,10
+South Dakota,1932,10
+South Dakota,1928,-10
+South Dakota,1924,-10
+South Dakota,1920,-10
+South Dakota,1916,-7
+South Dakota,1912,0
+South Dakota,1908,-10
+South Dakota,1904,-10
+South Dakota,1900,-10
+South Dakota,1896,5
+South Dakota,1892,-10
+Tennessee,2020,-10
+Tennessee,2016,-10
+Tennessee,2012,-10
+Tennessee,2008,-10
+Tennessee,2004,-10
+Tennessee,2000,-7
+Tennessee,1996,6
+Tennessee,1992,7
+Tennessee,1988,-10
+Tennessee,1984,-10
+Tennessee,1980,-5
+Tennessee,1976,10
+Tennessee,1972,-10
+Tennessee,1968,-10
+Tennessee,1964,10
+Tennessee,1960,-9
+Tennessee,1956,-5
+Tennessee,1952,-5
+Tennessee,1948,10
+Tennessee,1944,10
+Tennessee,1940,10
+Tennessee,1936,10
+Tennessee,1932,10
+Tennessee,1928,-9
+Tennessee,1924,10
+Tennessee,1920,-7
+Tennessee,1916,10
+Tennessee,1912,10
+Tennessee,1908,8
+Tennessee,1904,10
+Tennessee,1900,9
+Tennessee,1896,8
+Tennessee,1892,10
+Tennessee,1888,8
+Tennessee,1884,7
+Tennessee,1880,9
+Tennessee,1876,10
+Tennessee,1872,7
+Tennessee,1868,-10
+Tennessee,1860,0
+Tennessee,1856,10
+Tennessee,1852,-6
+Tennessee,1848,-8
+Tennessee,1844,-5
+Tennessee,1840,-10
+Tennessee,1836,-10
+Tennessee,1832,10
+Tennessee,1828,10
+Texas,2020,-8
+Texas,2016,-9
+Texas,2012,-10
+Texas,2008,-10
+Texas,2004,-10
+Texas,2000,-10
+Texas,1996,-7
+Texas,1992,-7
+Texas,1988,-10
+Texas,1984,-10
+Texas,1980,-10
+Texas,1976,7
+Texas,1972,-10
+Texas,1968,6
+Texas,1964,10
+Texas,1960,6
+Texas,1956,-10
+Texas,1952,-8
+Texas,1948,10
+Texas,1944,10
+Texas,1940,10
+Texas,1936,10
+Texas,1932,10
+Texas,1928,-7
+Texas,1924,10
+Texas,1920,10
+Texas,1916,10
+Texas,1912,10
+Texas,1908,10
+Texas,1904,10
+Texas,1900,10
+Texas,1896,10
+Texas,1892,10
+Texas,1888,10
+Texas,1884,10
+Texas,1880,10
+Texas,1876,10
+Texas,1872,10
+Texas,1860,0
+Texas,1856,10
+Texas,1852,10
+Texas,1848,10
+Utah,2020,-10
+Utah,2016,-10
+Utah,2012,-10
+Utah,2008,-10
+Utah,2004,-10
+Utah,2000,-10
+Utah,1996,-10
+Utah,1992,-10
+Utah,1988,-10
+Utah,1984,-10
+Utah,1980,-10
+Utah,1976,-10
+Utah,1972,-10
+Utah,1968,-10
+Utah,1964,10
+Utah,1960,-10
+Utah,1956,-10
+Utah,1952,-10
+Utah,1948,9
+Utah,1944,10
+Utah,1940,10
+Utah,1936,10
+Utah,1932,10
+Utah,1928,-9
+Utah,1924,-10
+Utah,1920,-10
+Utah,1916,10
+Utah,1912,-7
+Utah,1908,-10
+Utah,1904,-10
+Utah,1900,-6
+Utah,1896,10
+Vermont,2020,10
+Vermont,2016,10
+Vermont,2012,10
+Vermont,2008,10
+Vermont,2004,10
+Vermont,2000,10
+Vermont,1996,10
+Vermont,1992,10
+Vermont,1988,-7
+Vermont,1984,-10
+Vermont,1980,-8
+Vermont,1976,-10
+Vermont,1972,-10
+Vermont,1968,-10
+Vermont,1964,10
+Vermont,1960,-10
+Vermont,1956,-10
+Vermont,1952,-10
+Vermont,1948,-10
+Vermont,1944,-10
+Vermont,1940,-10
+Vermont,1936,-10
+Vermont,1932,-10
+Vermont,1928,-10
+Vermont,1924,-10
+Vermont,1920,-10
+Vermont,1916,-10
+Vermont,1912,-10
+Vermont,1908,-10
+Vermont,1904,-10
+Vermont,1900,-10
+Vermont,1896,-10
+Vermont,1892,-10
+Vermont,1888,-10
+Vermont,1884,-10
+Vermont,1880,-10
+Vermont,1876,-10
+Vermont,1872,-10
+Vermont,1868,-10
+Vermont,1864,-10
+Vermont,1860,-10
+Vermont,1856,-10
+Vermont,1852,-10
+Vermont,1848,-10
+Vermont,1844,-10
+Vermont,1840,-10
+Vermont,1836,-10
+Vermont,1832,0
+Vermont,1828,-10
+Virginia,2020,10
+Virginia,2016,8
+Virginia,2012,7
+Virginia,2008,8
+Virginia,2004,-9
+Virginia,2000,-9
+Virginia,1996,-6
+Virginia,1992,-7
+Virginia,1988,-10
+Virginia,1984,-10
+Virginia,1980,-10
+Virginia,1976,-6
+Virginia,1972,-10
+Virginia,1968,-10
+Virginia,1964,9
+Virginia,1960,-8
+Virginia,1956,-10
+Virginia,1952,-10
+Virginia,1948,8
+Virginia,1944,10
+Virginia,1940,10
+Virginia,1936,10
+Virginia,1932,10
+Virginia,1928,-9
+Virginia,1924,10
+Virginia,1920,10
+Virginia,1916,10
+Virginia,1912,10
+Virginia,1908,10
+Virginia,1904,10
+Virginia,1900,10
+Virginia,1896,8
+Virginia,1892,10
+Virginia,1888,5
+Virginia,1884,6
+Virginia,1880,10
+Virginia,1876,10
+Virginia,1872,-5
+Virginia,1860,0
+Virginia,1856,10
+Virginia,1852,10
+Virginia,1848,6
+Virginia,1844,8
+Virginia,1840,6
+Virginia,1836,10
+Virginia,1832,10
+Virginia,1828,10
+Washington,2020,10
+Washington,2016,10
+Washington,2012,10
+Washington,2008,10
+Washington,2004,9
+Washington,2000,8
+Washington,1996,10
+Washington,1992,10
+Washington,1988,6
+Washington,1984,-10
+Washington,1980,-10
+Washington,1976,-7
+Washington,1972,-10
+Washington,1968,6
+Washington,1964,10
+Washington,1960,-6
+Washington,1956,-9
+Washington,1952,-10
+Washington,1948,10
+Washington,1944,10
+Washington,1940,10
+Washington,1936,10
+Washington,1932,10
+Washington,1928,-10
+Washington,1924,-10
+Washington,1920,-10
+Washington,1916,7
+Washington,1912,0
+Washington,1908,-10
+Washington,1904,-10
+Washington,1900,-10
+Washington,1896,10
+Washington,1892,-9
+West Virginia,2020,-10
+West Virginia,2016,-10
+West Virginia,2012,-10
+West Virginia,2008,-10
+West Virginia,2004,-10
+West Virginia,2000,-8
+West Virginia,1996,10
+West Virginia,1992,10
+West Virginia,1988,7
+West Virginia,1984,-10
+West Virginia,1980,7
+West Virginia,1976,10
+West Virginia,1972,-10
+West Virginia,1968,9
+West Virginia,1964,10
+West Virginia,1960,8
+West Virginia,1956,-9
+West Virginia,1952,7
+West Virginia,1948,10
+West Virginia,1944,10
+West Virginia,1940,10
+West Virginia,1936,10
+West Virginia,1932,10
+West Virginia,1928,-10
+West Virginia,1924,-8
+West Virginia,1920,-10
+West Virginia,1916,-5
+West Virginia,1912,10
+West Virginia,1908,-10
+West Virginia,1904,-10
+West Virginia,1900,-10
+West Virginia,1896,-8
+West Virginia,1892,6
+West Virginia,1888,5
+West Virginia,1884,7
+West Virginia,1880,10
+West Virginia,1876,10
+West Virginia,1872,-7
+West Virginia,1868,-10
+West Virginia,1864,-10
+Wisconsin,2020,5
+Wisconsin,2016,-5
+Wisconsin,2012,8
+Wisconsin,2008,10
+Wisconsin,2004,5
+Wisconsin,2000,5
+Wisconsin,1996,10
+Wisconsin,1992,7
+Wisconsin,1988,7
+Wisconsin,1984,-10
+Wisconsin,1980,-7
+Wisconsin,1976,6
+Wisconsin,1972,-10
+Wisconsin,1968,-7
+Wisconsin,1964,10
+Wisconsin,1960,-7
+Wisconsin,1956,-10
+Wisconsin,1952,-10
+Wisconsin,1948,7
+Wisconsin,1944,-6
+Wisconsin,1940,6
+Wisconsin,1936,10
+Wisconsin,1932,10
+Wisconsin,1928,-10
+Wisconsin,1924,0
+Wisconsin,1920,-10
+Wisconsin,1916,-8
+Wisconsin,1912,9
+Wisconsin,1908,-10
+Wisconsin,1904,-10
+Wisconsin,1900,-10
+Wisconsin,1896,-10
+Wisconsin,1892,6
+Wisconsin,1888,-8
+Wisconsin,1884,-7
+Wisconsin,1880,-10
+Wisconsin,1876,-6
+Wisconsin,1872,-10
+Wisconsin,1868,-10
+Wisconsin,1864,-10
+Wisconsin,1860,-10
+Wisconsin,1856,-10
+Wisconsin,1852,10
+Wisconsin,1848,7
+Wyoming,2020,-10
+Wyoming,2016,-10
+Wyoming,2012,-10
+Wyoming,2008,-10
+Wyoming,2004,-10
+Wyoming,2000,-10
+Wyoming,1996,-10
+Wyoming,1992,-8
+Wyoming,1988,-10
+Wyoming,1984,-10
+Wyoming,1980,-10
+Wyoming,1976,-10
+Wyoming,1972,-10
+Wyoming,1968,-10
+Wyoming,1964,10
+Wyoming,1960,-10
+Wyoming,1956,-10
+Wyoming,1952,-10
+Wyoming,1948,7
+Wyoming,1944,-6
+Wyoming,1940,8
+Wyoming,1936,10
+Wyoming,1932,10
+Wyoming,1928,-10
+Wyoming,1924,-10
+Wyoming,1920,-10
+Wyoming,1916,10
+Wyoming,1912,6
+Wyoming,1908,-10
+Wyoming,1904,-10
+Wyoming,1900,-10
+Wyoming,1896,7
+Wyoming,1892,-10
+Washington DC,2020,10
+Washington DC,2016,10
+Washington DC,2012,10
+Washington DC,2008,10
+Washington DC,2004,10
+Washington DC,2000,10
+Washington DC,1996,10
+Washington DC,1992,10
+Washington DC,1988,10
+Washington DC,1984,10
+Washington DC,1980,10
+Washington DC,1976,10
+Washington DC,1972,10
+Washington DC,1968,10
+Washington DC,1964,10

@@ -59,7 +59,7 @@ from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_
 
 from dataplane.data_plane_utils import InvalidDataException
 from dataplane.data_plane_table import  check_valid_spec
-from server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
+from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 

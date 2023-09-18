@@ -40,7 +40,7 @@ import sys
 
 sys.path.append('.')
 sys.path.append('./data_plane')
-from data_plane.server.data_plane_server import data_plane_server_blueprint
+from data_plane.data_plane_server.data_plane_server import data_plane_server_blueprint
 
 def create_app():
     app = Flask(__name__)

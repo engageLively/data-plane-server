@@ -32,7 +32,7 @@ Run tests on the table server, the middleware that sits between the data plane s
 and the data plane server
 '''
 import pytest
-from server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec, Table
+from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec, Table
 from dataplane.data_plane_table import RowTable
 from dataplane.data_plane_utils import InvalidDataException
 

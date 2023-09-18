@@ -50,14 +50,13 @@ import csv
 
 import pandas as pd
 
-from data_plane_utils import DATA_PLANE_SCHEMA_TYPES
-from data_plane_utils import InvalidDataException
-from data_plane_table import DataPlaneTable, RowTable
-from data_plane_server import add_data_plane_table
-from conversion_utils import convert_row
+from dataplane.data_plane_utils import DATA_PLANE_SCHEMA_TYPES, InvalidDataException
+from dataplane.data_plane_table import DataPlaneTable, RowTable
+from data_plane_server.table_server import Table
+from dataplane.conversion_utils import convert_row
 
 
-def create_server_from_csv(table_name, path_to_csv_file):
+def create_server_from_csv(table_name, path_to_csv_file, table_server, headers = {}):
     '''
     Create a server from a CSV file.The file must meet the format for a RowTable:
     1. Each row must contain the same number of columns;
@@ -66,24 +65,33 @@ def create_server_from_csv(table_name, path_to_csv_file):
     4. The type of each entry in rows 2-n must match the declared type of the column
     Note that it is expected that the csv file will have been appropriately conditioned; all
     of the elements in each numeric column are numbers, and dates, times, and datetimes are in isoformat
+    Arguments:
+         table_name: the name of the table to add
+         path_to_csv_file: the path to the csv file to read
+         table_server: the server to add the table to (an instance of table_server.TableServer)
+         headers: any authorization headers (default {})
+
     '''
     try:
         with open(path_to_csv_file, 'r') as f:
             r = csv.reader(f)
-            rows = r.readrows()
+            rows = [row for row in r]
         assert len(rows) > 2
         num_columns = len(rows[0])
+        columns = [entry.strip() for entry in rows[0]]
         for row in rows[1:]: assert len(row) == num_columns
-        for entry in rows[1]: assert entry in DATA_PLANE_SCHEMA_TYPES
+        types = [entry.strip() for entry in rows[1]]
+        for entry in types: assert entry in DATA_PLANE_SCHEMA_TYPES
     except Exception as error:
         raise InvalidDataException(error)
     
-    schema = [{"name": rows[0][i], "type": rows[1][i]} for i in range(num_columns)]
-    column_type_list = [{"type": data_plane_type} for data_plane_type in rows[1]]
+    schema = [{"name": columns[i], "type": types[i]} for i in range(num_columns)]
+    column_type_list = [{"type": data_plane_type} for data_plane_type in types]
     try:
         final_rows = [convert_row( row, column_type_list) for row in rows[2:]]
-        server = RowTable(schema, final_rows)
-        add_data_plane_table(table_name, server)
+        data_plane_table = RowTable(schema, final_rows)
+        data_server_table = Table(data_plane_table, headers)
+        table_server.add_data_plane_table({"name": table_name, "table": data_server_table})
 
     except ValueError as error:
         raise InvalidDataException(f'{error} raised during type conversion')

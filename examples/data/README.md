@@ -1,0 +1,2 @@
+# Example Data Plane Server Data
+This directory contains the sample data for the sample Data Plane Server in the containing directory.  Note that the format required for CSV files (at least using the `create_server_from_csv` format is strict: the first row contains the column names and the second row contains the column types, which must be from the `DATA_PLANE_SCHEMA_TYPES`

@@ -50,7 +50,7 @@ After that, requests for the named table will be served by the created data serv
 import datetime
 from math import nan
 
-from data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
+from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
 
 
 '''
@@ -68,9 +68,11 @@ def _convert_to_number(x, default_value = nan):
     # is a parameter passed in, default to nan
     # Rules:
     #     1. If it's already a number, just return the number
-    #     2. Try to convert to a float first.
-    #     3. If float conversion fails, attempt to convert to an int
-    #     4. If everything fails, just return
+    #     2. Try to convert to a float  first.
+    #     3. If float  conversion fails, attempt to convert to an int
+    #     4. If everything fails, just return the default
+    # the problem with converting to an int first is that int(2.3) == 2
+    # which is not what we want to return
     if default_value is None: default_value = nan
     if (isinstance(x, int) or isinstance(x, float)):
         return x
@@ -163,7 +165,7 @@ def _convert_to_date(d, format_string = None, default_value = datetime.date(1900
             return default_value
     return default_value
 
-def _convert_to_datetime(dt,  format_string = None, default_value = datetime.date(1900, 1, 1, 0, 0, 0)):
+def _convert_to_datetime(dt,  format_string = None, default_value = None):
     # Convert d to a datetime, or to the default value  if connversion fails.  The default_value
     # is a parameter passed in, default to (1900,1,1,0,0,0) (January 1, 1900, 12:00:00 AM)
     # The format_string, if passed, governs conversion from a string.  If there is no format_string,
@@ -285,7 +287,7 @@ def convert_row(row, type_conversion_object_list):
        type_conversion_object_list -- a list (length of the row) of type_conversion_objects to guide the conversion
     '''
     
-    return [convert_element(row[i], column_type_list[i]) for i in range(len(type_conversion_object_list))]
+    return [convert_element(row[i], type_conversion_object_list[i]) for i in range(len(type_conversion_object_list))]
 
 def convert_column(column, type_conversion_object):
     '''

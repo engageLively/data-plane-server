@@ -1,9 +1,6 @@
-"""Top-level package for Data Plane."""
-
-
 # BSD 3-Clause License
 
-# Copyright (c) 2023, engageLively
+# Copyright (c) 2019-2022, engageLively
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -31,22 +28,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-from flask import  Flask
-
+'''
+A simple example application showing how to use the DataPlaneServer to serve the tables in the presidential
+election dashboard.  To run this, make sure that FLASK_APP is set to presidential_election.py in the environment
+'''
 import sys
-import os
+# we're in a peer directory, so add the parent to the PYTHONPATH
+sys.path.append('..')
 
-sys.path.append('.')
-sys.path.append('./data_plane')
-from data_plane.data_plane_server.data_plane_server import data_plane_server_blueprint
+from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_STRING 
+from flask import Flask
+from flask_cors import CORS
+from data_plane_server.data_plane_server import  data_plane_server_blueprint, table_server
+from data_plane_server.data_plane_csv_server import create_server_from_csv
+
+
+
 app = Flask(__name__)
-
+CORS(app)
 app.register_blueprint(data_plane_server_blueprint)
-@app.route('/cwd')
-def cwd():
-    return os.getcwd()
+
+
+tables = [
+    {'name': 'electoral_college', 'path': 'data/electoral_college.csv'},
+    {'name': 'nationwide_vote', 'path': 'data/nationwide_vote.csv'},
+    {'name': 'presidential_vote', 'path': 'data/presidential_vote.csv'},
+    {'name': 'presidential_margins', 'path': 'data/presidential_margins.csv'},
+    {'name': 'presidential_vote_history', 'path': 'data/presidential_vote_history.csv'},
+]
+#
+# Create the tables with the spec and register them with the framework
+#
+for table_spec in tables:
+    create_server_from_csv(table_spec["name"], table_spec["path"], table_server, {})
 
 if __name__ == '__main__':
-    app.run()
-
+    app.run(host='127.0.0.1', port=8080, debug=True)
+    
