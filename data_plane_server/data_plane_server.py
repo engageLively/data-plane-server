@@ -207,12 +207,9 @@ def _column_types(table, columns):
 @data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
 def get_filtered_rows():
     '''
-    Get the filtered rows from a request.  In the initializer, this
-    was registered for the /get_filtered_rows route.  Gets the filter_spec
-    from the Filter-Spec field in the header.  If there is no filter_spec, returns
-    all rows using server.get_rows().  Aborts with a 400 if there is no
-    table_name, or if check_valid_spec or get_filtered_rows throws an
-    InvalidDataException, or if the filter_spec is not valid JSON.
+    Get the filtered rows from a request.   Gets the filter_spec from the filter  field in the body, the table name from the table field
+    in the body.  If there is a columns field in the body, returns 
+    onlyt the named columns.  If there is no filter_spec, returns all rows using server.get_rows().  Aborts with a 400 if there is no table, or if check_valid_spec or get_filtered_rows throws an InvalidDataException, or if the filter_spec is not valid JSON.
 
     Arguments:
         None
@@ -375,7 +372,7 @@ def show_routes():
     pages = [
             {"url": "/, /help", "headers": "", "method": "GET", "description": "print this message"},
             {"url": "/get_tables", "method": "GET", "headers": "<i>as required for authentication</i>", "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
-            {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "GET", "headers": "Filter-Spec <i>Type Filter Spec, required</i>, <i>others as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
+            {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "POST", "body": {"table": "<i> required, the name of the table to get the rows from<i/>", "columns": "<i> If  present, a list of the names of the columns to fetch</i>","filter": "<i> optional, a filter_spec in the data plane filter language" }, "headers": "<i> as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
             {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers":"<i>as required for authentication</i>", "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},
             {"url": "/get_all_values?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers": "<i>as required for authentication</i>", "description": "Get all the distinct values for column <i>column_name</i> in table <i>table_name</i>, returned as a sorted list.  Authentication variables shjould be in headers."},
             {"url": "/get_table_spec", "method": "GET", "description": "Return the dictionary of table names and authorization variables"},
