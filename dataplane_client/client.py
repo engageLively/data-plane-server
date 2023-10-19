@@ -67,7 +67,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
-    def get_filtered_rows(self, table_name, filter_spec, headers, column_name=None):
+    def get_filtered_rows(self, table_name, filter_spec, headers, columns=None):
         """
             Args:
                 table_name: name of the table, String
@@ -81,7 +81,7 @@ class DataPlaneClient:
         # Throwing InvalidDataException if entered data is invalid
         try:
             self.check_input(table_name)
-            self.check_input(column_name)
+            self.check_input(columns)
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
 
@@ -94,19 +94,28 @@ class DataPlaneClient:
 
         # Throwing Exceptions if there is no table or column found
         try:
+            request_data = {"table_name": table_name, "filter_spec": filter}
+            if columns is not None:
+                request_data["columns"] = columns
             try:
+                full_url = f"{self.main_url}/get_filtered_rows"
+                response = requests.post(full_url, json=request_data, headers=headers)
+                response.raise_for_status()
+                return response.json()
+                '''
                 full_url = f"{self.main_url}/get_filtered_rows?table_name={table_name}"
-                if column_name is not None:
-                    full_url += f"&column_name={','.join(column_name)}"
+                if columns is not None:
+                    full_url += f"&column_names={','.join(columns)}"
                 self.validate_url(full_url)
                 response = requests.post(full_url, json={"filter": filter_spec}, headers=headers)
                 return response.json()
+                '''
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
         except TableNotFoundException:
             _log_and_abort(f'No  table {table_name} present, request /get_filtered_rows', 400)
         except ColumnNotFoundException:
-            _log_and_abort(f'No column {column_name} in table {table_name}, request /get_filtered_rows', 400)
+            _log_and_abort(f'No column {columns} in table {table_name}, request /get_filtered_rows', 400)
 
     def get_range_spec(self, table_name, column_name, headers):
         """
