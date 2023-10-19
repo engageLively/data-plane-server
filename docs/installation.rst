@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/rickmcgeer/data_plane
+    $ git clone git://github.com/engageLively/data_plane_server
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/rickmcgeer/data_plane/tarball/master
+    $ curl -OJL https://github.com/engageLively/data_plane_server/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
