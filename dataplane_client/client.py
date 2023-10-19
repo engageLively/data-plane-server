@@ -36,7 +36,7 @@ class DataPlaneClient:
         else:
             raise ValueError(f"{arg_name} cannot be None")
 
-    def get_all_values(self, table_name, column_name, headers=None):
+    def get_all_values(self, table_name, column_name, headers):
         """
             Args:
                 table_name: name of the table, String
@@ -56,7 +56,7 @@ class DataPlaneClient:
         # Throwing Exceptions if there is no table or column found
         try:
             try:
-                full_url = f"{self.main_url}/get_all_values?table_name={table_name}&column_name={column_name}"
+                full_url = f"{self.main_url}/get_all_values?column_name={column_name}&table_name={table_name}"
                 self.validate_url(full_url)
                 response = requests.get(full_url, headers=headers)
                 return response.json()
@@ -67,7 +67,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
-    def get_filtered_rows(self, table_name, filter_spec, column_name, headers=None):
+    def get_filtered_rows(self, table_name, filter_spec, headers, column_name=None):
         """
             Args:
                 table_name: name of the table, String
@@ -96,8 +96,8 @@ class DataPlaneClient:
         try:
             try:
                 full_url = f"{self.main_url}/get_filtered_rows?table_name={table_name}"
-                if column_name:
-                    full_url += f"&columns={','.join(column_name)}"
+                if column_name is not None:
+                    full_url += f"&column_name={','.join(column_name)}"
                 self.validate_url(full_url)
                 response = requests.post(full_url, json={"filter": filter_spec}, headers=headers)
                 return response.json()
@@ -108,7 +108,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_filtered_rows', 400)
 
-    def get_range_spec(self, table_name, column_name, headers=None):
+    def get_range_spec(self, table_name, column_name, headers):
         """
             Args:
                 table_name: name of the table, String
@@ -128,7 +128,7 @@ class DataPlaneClient:
         # Throwing Exceptions if there is no table or column found
         try:
             try:
-                full_url = f"{self.main_url}/get_range_spec?table_name={table_name}&column_name={column_name}"
+                full_url = f"{self.main_url}/get_range_spec?column_name={column_name}&table_name={table_name}"
                 self.validate_url(full_url)
                 response = requests.get(full_url, headers=headers)
                 return response.json()
@@ -139,7 +139,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_range_spec', 400)
 
-    def get_tables(self, headers=None):
+    def get_tables(self, headers):
         """
             Args:
                 None
@@ -160,20 +160,14 @@ class DataPlaneClient:
         except TableNotFoundException:
             _log_and_abort(f'No  tables found, request /get_tables', 400)
 
-    def get_table_spec(self, table_name):
+    def get_table_spec(self):
         """
             Args:
-                table_name: name of the table, String
+                None
 
             Returns:
                 response.json()
         """
-
-        # Throwing InvalidDataException if entered data is invalid
-        try:
-            self.check_input(table_name)
-        except InvalidDataException as invalid_error:
-            _log_and_abort(invalid_error)
 
         # Throwing Exceptions if there is no table or column found
         try:
@@ -185,4 +179,4 @@ class DataPlaneClient:
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
         except TableNotFoundException:
-            _log_and_abort(f'No  table {table_name} present, request /get_range_spec', 400)
+            _log_and_abort(f'No  table tables present, request /get_range_spec', 400)

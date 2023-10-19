@@ -7,7 +7,6 @@ from dataplane_client.client import DataPlaneClient
 
 
 class MockResponse:
-
     @staticmethod
     def json():
         return {"mock_key": "mock_response"}
@@ -17,7 +16,6 @@ class MockResponse:
 def mock_response_get(monkeypatch):
     def mock_get(*args, **kwargs):
         return MockResponse()
-
     monkeypatch.setattr(requests, "get", mock_get)
 
 
@@ -25,7 +23,6 @@ def mock_response_get(monkeypatch):
 def mock_response_post(monkeypatch):
     def mock_post(*args, **kwargs):
         return MockResponse()
-
     monkeypatch.setattr(requests, "post", mock_post)
 
 
@@ -37,7 +34,7 @@ def test_get_all_values(mock_response_get):
 
 def test_get_filtered_rows(mock_response_post):
     client = DataPlaneClient("http://example.com")
-    filter_spec = {"operator": "NONE"}
+    filter_spec = {"operator": "IN_RANGE"}
     response = client.get_filtered_rows("table_name", filter_spec, "column_name")
     assert response == {"mock_key": "mock_response"}
 
