@@ -537,4 +537,36 @@ def test_get_columns():
     assert names_only == all_rows
 
 
-    
+# Test getting all the values from a filter
+
+def _compare_get_all_values(filter_spec, schema, column_name, expected):
+    # Compare the results of get_all_column_values for a filter specification
+    # to the result.
+    # parameters:
+    #   filter_spec: a filter specification
+    #   schema: a list of the form {name, type}
+    #   column_name: the name of the column to find the values for
+    #   expected: the results expected
+    data_plane_filter = DataPlaneFilter(filter_spec, schema)
+    result = data_plane_filter.get_all_column_values_in_filter(column_name)
+    assert(result == expected)
+
+def test_get_all_column_values_in_filter():
+    list_filter = {"operator": "IN_LIST", "column": "foo", "values": [1, 2, 3]}
+    range_filter = {"operator": "IN_RANGE", "column": "foo", "max_val": 5, "min_val": 4}
+    regex_filter = {"operator": "REGEX_MATCH", "column": "bar", "expression": "a.*b"}
+    schema = [
+        {"name": "foo", "type": DATA_PLANE_NUMBER},
+        {"name": "bar", "type": DATA_PLANE_STRING}
+    ]
+    _compare_get_all_values(list_filter, schema, None, set())
+    _compare_get_all_values(list_filter, schema, 1, set())
+    _compare_get_all_values(list_filter, schema, "foo", {1, 2, 3})
+    _compare_get_all_values(list_filter, schema, "bar", set())
+    _compare_get_all_values(range_filter, schema, "foo", {4, 5})
+    _compare_get_all_values(regex_filter, schema, "foo", set())
+    _compare_get_all_values(regex_filter, schema, "bar", {"a.*b"})
+    _compare_get_all_values({"operator": "ALL", "arguments": [list_filter, regex_filter]}, schema, "bar", {"a.*b"})
+    _compare_get_all_values({"operator": "ALL", "arguments": [list_filter, regex_filter]}, schema, "foo", {1, 2, 3})
+    _compare_get_all_values({"operator": "NONE", "arguments": [list_filter]}, schema, "foo", {1, 2, 3})
+    _compare_get_all_values({"operator": "ALL", "arguments": [list_filter, range_filter]}, schema, "foo", {1,2, 3, 4, 5})
