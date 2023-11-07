@@ -33,21 +33,19 @@ A simple example application showing how to use the DataPlaneServer to serve the
 election dashboard.  To run this, make sure that FLASK_APP is set to presidential_election.py in the environment
 '''
 import sys
+
 # we're in a peer directory, so add the parent to the PYTHONPATH
 sys.path.append('..')
 
-from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_STRING 
+from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_STRING
 from flask import Flask
 from flask_cors import CORS
-from data_plane_server.data_plane_server import  data_plane_server_blueprint, table_server
+from data_plane_server.data_plane_server import data_plane_server_blueprint, table_server
 from data_plane_server.data_plane_csv_server import create_server_from_csv
-
-
 
 app = Flask(__name__)
 CORS(app)
 app.register_blueprint(data_plane_server_blueprint)
-
 
 tables = [
     {'name': 'electoral_college', 'path': 'data/electoral_college.csv'},
@@ -64,4 +62,3 @@ for table_spec in tables:
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
-    

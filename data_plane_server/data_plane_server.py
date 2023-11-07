@@ -207,7 +207,7 @@ def _column_types(table, columns):
 #     return jsonify(request.json)
 
 
-@data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
+@data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST', 'GET'])
 def get_filtered_rows():
     '''
     Get the filtered rows from a request.  In the initializer, this
@@ -223,7 +223,9 @@ def get_filtered_rows():
         The filtered rows as a JSONified list of lists
     '''
     try:
+        print(request.data)
         data = request.get_json()
+
         filter_spec = data["filter"] if 'filter' in data else None
         columns = data["columns"] if 'columns' in data else []
         try:
@@ -231,31 +233,31 @@ def get_filtered_rows():
         except KeyError:
             _log_and_abort('table is a required parameter to get filtererd rows', 400)
 
-    except JSONDecodeError as error:
-        _log_and_abort(f'Bad arguments to /get_filtered_rows.  Error {error.msg}')
-    table = _table_server_if_authorized('/get_filtered_rows', table_name)
-    if columns is None: columns = []
-    if not isinstance(columns, list):
-        _log_and_abort(f'Columns to /get_filtered_rows must be a list of strings, not {columns}, 400')
+        table = _table_server_if_authorized('/get_filtered_rows', table_name)
+        if columns is None: columns = []
+        if not isinstance(columns, list):
+            _log_and_abort(f'Columns to /get_filtered_rows must be a list of strings, not {columns}, 400')
     # Make sure that the columns are all valid columns of this table
-    names = table.column_names()
-    bad_columns = [column for column in columns if column not in names]
-    if (len(bad_columns) > 0):
-        _log_and_abort(f'Bad Columns {bad_columns} sent to /get_filtered_rows, table {table_name}', 400)
+        names = table.column_names()
+        bad_columns = [column for column in columns if column not in names]
+        if (len(bad_columns) > 0):
+            _log_and_abort(f'Bad Columns {bad_columns} sent to /get_filtered_rows, table {table_name}', 400)
 
     # If there is no filter, just return the table's rows.  If
     # there is a filter, make sure it's valid and then return the filtered
     # rows
-    if filter_spec is not None:
-        try:
-            check_valid_spec(filter_spec)
-        except InvalidDataException as invalid_error:
-            _log_and_abort(invalid_error)
-    result = table.get_filtered_rows(filter_spec=filter_spec, columns=columns)
-    types = _column_types(table, columns)
-    jsonifiable_result = _jsonifiable_rows_(result, types)
+        if filter_spec is not None:
+            try:
+                check_valid_spec(filter_spec)
+            except InvalidDataException as invalid_error:
+                _log_and_abort(invalid_error)
+        result = table.get_filtered_rows(filter_spec=filter_spec, columns=columns)
+        types = _column_types(table, columns)
+        jsonifiable_result = _jsonifiable_rows_(result, types)
 
-    return jsonify(jsonifiable_result)
+        return jsonify(jsonifiable_result)
+    except JSONDecodeError as error:
+            _log_and_abort(f'Bad arguments to /get_filtered_rows.  Error {error.msg}')
 
 
 def _check_required_parameters(route, required_parameters):
@@ -382,7 +384,7 @@ def show_routes():
          "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
         {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "GET",
          "headers": "Filter-Spec <i>Type Filter Spec, required</i>, <i>others as required for authentication</i>",
-         "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
+         "description": "Get the rows from tablei Table-Name (and, optionally, Dashboard-Name) whch match filter Filter-Spec"},
         {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET",
          "headers": "<i>as required for authentication</i>",
          "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},

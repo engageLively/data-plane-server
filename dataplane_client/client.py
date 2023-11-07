@@ -1,3 +1,5 @@
+import json
+
 import requests
 import pandas as pa
 from urllib.parse import urlparse
@@ -36,7 +38,7 @@ class DataPlaneClient:
         else:
             raise ValueError(f"{arg_name} cannot be None")
 
-    def get_all_values(self, table_name, column_name, headers):
+    def get_all_values(self, table_name, column_name):
         """
             Args:
                 table_name: name of the table, String
@@ -58,7 +60,7 @@ class DataPlaneClient:
             try:
                 full_url = f"{self.main_url}/get_all_values?column_name={column_name}&table_name={table_name}"
                 self.validate_url(full_url)
-                response = requests.get(full_url, headers=headers)
+                response = requests.get(full_url)
                 return response.json()
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
@@ -67,13 +69,12 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
-    def get_filtered_rows(self, table_name, filter_spec, headers, columns=None):
+    def get_filtered_rows(self, table_name, filter_spec):
         """
             Args:
                 table_name: name of the table, String
                 filter_spec: Dictionary
                 column_name: name of the column, String
-
             Returns:
                 response.json()
         """
@@ -81,43 +82,33 @@ class DataPlaneClient:
         # Throwing InvalidDataException if entered data is invalid
         try:
             self.check_input(table_name)
-            self.check_input(columns)
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
 
+        '''
         # Throwing InvalidDataException if filter_spec is invalid
         if filter_spec is not None:
             try:
                 check_valid_spec(filter_spec)
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
+        '''
 
         # Throwing Exceptions if there is no table or column found
         try:
-            request_data = {"table_name": table_name, "filter_spec": filter}
-            if columns is not None:
-                request_data["columns"] = columns
+            request_data = {"table": table_name, "filter": filter_spec}
             try:
                 full_url = f"{self.main_url}/get_filtered_rows"
-                response = requests.post(full_url, json=request_data, headers=headers)
+                self.validate_url(full_url)
+                response = requests.post(full_url, data=json.dumps(request_data))
                 response.raise_for_status()
                 return response.json()
-                '''
-                full_url = f"{self.main_url}/get_filtered_rows?table_name={table_name}"
-                if columns is not None:
-                    full_url += f"&column_names={','.join(columns)}"
-                self.validate_url(full_url)
-                response = requests.post(full_url, json={"filter": filter_spec}, headers=headers)
-                return response.json()
-                '''
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
         except TableNotFoundException:
             _log_and_abort(f'No  table {table_name} present, request /get_filtered_rows', 400)
-        except ColumnNotFoundException:
-            _log_and_abort(f'No column {columns} in table {table_name}, request /get_filtered_rows', 400)
 
-    def get_range_spec(self, table_name, column_name, headers):
+    def get_range_spec(self, table_name, column_name):
         """
             Args:
                 table_name: name of the table, String
@@ -139,7 +130,7 @@ class DataPlaneClient:
             try:
                 full_url = f"{self.main_url}/get_range_spec?column_name={column_name}&table_name={table_name}"
                 self.validate_url(full_url)
-                response = requests.get(full_url, headers=headers)
+                response = requests.get(full_url)
                 return response.json()
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
@@ -148,7 +139,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_range_spec', 400)
 
-    def get_tables(self, headers):
+    def get_tables(self):
         """
             Args:
                 None
@@ -162,7 +153,7 @@ class DataPlaneClient:
             try:
                 full_url = f"{self.main_url}/get_tables"
                 self.validate_url(full_url)
-                response = requests.get(full_url, headers=headers)
+                response = requests.get(full_url)
                 return response.json()
             except InvalidDataException as invalid_error:
                 _log_and_abort(invalid_error)
