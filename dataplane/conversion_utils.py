@@ -46,24 +46,25 @@ After that, requests for the named table will be served by the created data serv
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
 import datetime
 from math import nan
 
-from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
-
+from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_NUMBER, \
+    DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
 
 '''
 A set of utilities to do type conversion.  CSV files (a primary data source) often
 contain strings as numbers, dates, and so forth, and these must be converted to the right
-data type on load.  
+data type on load.
 '''
 
-def _convert_to_string(s):
-   # handle lists, objects, etc
-   return s if isinstance(s, str) else str(s) 
 
-def _convert_to_number(x, default_value = nan):
+def _convert_to_string(s):
+    # handle lists, objects, etc
+    return s if isinstance(s, str) else str(s)
+
+
+def _convert_to_number(x, default_value=nan):
     # Convert x to a number, or to the default value  if connversion fails.  The default_value
     # is a parameter passed in, default to nan
     # Rules:
@@ -74,7 +75,7 @@ def _convert_to_number(x, default_value = nan):
     # the problem with converting to an int first is that int(2.3) == 2
     # which is not what we want to return
     if default_value is None: default_value = nan
-    if (isinstance(x, int) or isinstance(x, float)):
+    if isinstance(x, int) or isinstance(x, float):
         return x
     try:
         return float(x)
@@ -84,8 +85,9 @@ def _convert_to_number(x, default_value = nan):
         return int(x)
     except ValueError:
         return default_value
-    
-def _convert_to_boolean(aBool, default_value = False):
+
+
+def _convert_to_boolean(aBool, default_value=False):
     # convert aBool to a boolean, or default_value if not provided.  The rules are simple:
     # 1. if aBool is a boolean, return it
     # 2. if aBool is a string, treturn True iff aBool is in {"True", "true", "1", "t"}
@@ -99,7 +101,8 @@ def _convert_to_boolean(aBool, default_value = False):
         return aBool != 0
     return default_value
 
-def _convert_to_time(t, format_string = None, default_value = datetime.time(0, 0, 0)):
+
+def _convert_to_time(t, format_string=None, default_value=datetime.time(0, 0, 0)):
     # Convert t to a time, or to the default value  if connversion fails.  The default_value
     # is a parameter passed in, default to (0, 0, 0) (12:00:00 AM)
     # The format_string, if passed, governs conversion from a string.  If there is no format_string,
@@ -132,7 +135,8 @@ def _convert_to_time(t, format_string = None, default_value = datetime.time(0, 0
             return default_value
     return default_value
 
-def _convert_to_date(d, format_string = None, default_value = datetime.date(1900, 1, 1)):
+
+def _convert_to_date(d, format_string=None, default_value=datetime.date(1900, 1, 1)):
     # Convert d to a date, or to the default value  if connversion fails.  The default_value
     # is a parameter passed in, default to (1900,1,1) (January 1, 1900)
     # The format_string, if passed, governs conversion from a string.  If there is no format_string,
@@ -165,7 +169,8 @@ def _convert_to_date(d, format_string = None, default_value = datetime.date(1900
             return default_value
     return default_value
 
-def _convert_to_datetime(dt,  format_string = None, default_value = None):
+
+def _convert_to_datetime(dt, format_string=None, default_value=None):
     # Convert d to a datetime, or to the default value  if connversion fails.  The default_value
     # is a parameter passed in, default to (1900,1,1,0,0,0) (January 1, 1900, 12:00:00 AM)
     # The format_string, if passed, governs conversion from a string.  If there is no format_string,
@@ -183,9 +188,11 @@ def _convert_to_datetime(dt,  format_string = None, default_value = None):
     if isinstance(dt, datetime.datetime):
         return dt
     if isinstance(dt, datetime.time):
-        return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute, dt.second)
+        return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute,
+                                 dt.second)
     if isinstance(dt, datetime.date):
-        return datetime.datetime(dt.year, dt.month, dt.day, default_value.hour, default_value.minute, default_value.second)
+        return datetime.datetime(dt.year, dt.month, dt.day, default_value.hour, default_value.minute,
+                                 default_value.second)
     if isinstance(dt, str):
         if format_string:
             try:
@@ -199,7 +206,7 @@ def _convert_to_datetime(dt,  format_string = None, default_value = None):
     return default_value
 
 
-def _coerce_types_in_series(series, data_plane_type, format_string = None, column_default = None):
+def _coerce_types_in_series(series, data_plane_type, format_string=None, column_default=None):
     # Internal use, coercing a column (from a CSV or a dataframe) to the
     # desired data plane type.
     # ATM, no heroic conversion is being done -- eventually we will have to
@@ -216,8 +223,9 @@ def _coerce_types_in_series(series, data_plane_type, format_string = None, colum
         return [_convert_to_date(d, format_string, column_default) for d in series]
     if data_plane_type == DATA_PLANE_DATETIME:
         return [_convert_to_datetime(dt, format_string, column_default) for dt in series]
-    
-def _convert_default_value(data_plane_type, format_string, default_value ):
+
+
+def _convert_default_value(data_plane_type, format_string, default_value):
     # A utility to convert the given default_value to one of the right type.
     # This is because the default_value may come in a string (consider a CSV file)
     # ATM only converts strings
@@ -234,18 +242,16 @@ def _convert_default_value(data_plane_type, format_string, default_value ):
     if data_plane_type == DATA_PLANE_DATE:
         return _convert_to_date(default_value, format_string, None)
     if data_plane_type == DATA_PLANE_DATETIME:
-        return _convert_to_datetime(default_value, format_string, None) 
+        return _convert_to_datetime(default_value, format_string, None)
 
-    
 
 def _get_safe(object, key):
     return object[key] if key in object.keys() else None
 
 
-
 def convert_element(element, type_conversion_object):
     '''
-    convert the element to the appropriate type, using type_conversion_object.  
+    convert the element to the appropriate type, using type_conversion_object.
     A type_conversion object is a dictionary with  1-3 members:
           1. type, the type to convert to; (REQUIRED)
           2. format_string, the string to use for formatting (for TIME, DATE, DATETIME types only) (OPTIONAL)
@@ -270,42 +276,39 @@ def convert_element(element, type_conversion_object):
     if data_plane_type == DATA_PLANE_NUMBER:
         return _convert_to_number(element, default_value)
     if data_plane_type == DATA_PLANE_BOOLEAN:
-        return _convert_to_boolean(element, default_value) 
+        return _convert_to_boolean(element, default_value)
     if data_plane_type == DATA_PLANE_TIME_OF_DAY:
         return _convert_to_time(element, format_string, default_value)
     if data_plane_type == DATA_PLANE_DATE:
         return _convert_to_date(element, format_string, default_value)
     if data_plane_type == DATA_PLANE_DATETIME:
         return _convert_to_datetime(element, format_string, default_value)
-    
+
 
 def convert_row(row, type_conversion_object_list):
     '''
     Convert a row (as a list) to the appropriate types given by the corresponding type_conversion_object
-    Parameters: 
+    Parameters:
        row -- the row to be converted
        type_conversion_object_list -- a list (length of the row) of type_conversion_objects to guide the conversion
     '''
-    
+
     return [convert_element(row[i], type_conversion_object_list[i]) for i in range(len(type_conversion_object_list))]
+
 
 def convert_column(column, type_conversion_object):
     '''
-    Convert a column (as a list) of a DataPlaneTable to the appropriate types given by the corrsponding 
+    Convert a column (as a list) of a DataPlaneTable to the appropriate types given by the corrsponding
     Parameters:
         column -- the column to be converted
         type_conversion_object: a conversion object as described above
     Returns:
         the column converted into the appropriate type
-        
+
     '''
     format_string = _get_safe(type_conversion_object, "format_string")
     default_value = _get_safe(type_conversion_object, "default_value")
     data_plane_type = type_conversion_object["type"]
     # Make sure the default_value is the appropriate t ype
     default_value = _convert_default_value(data_plane_type, format_string, default_value)
-    return _coerce_types_in_series(column, data_plane_type, format_string,  default_value)
-    
-
-    
-
+    return _coerce_types_in_series(column, data_plane_type, format_string, default_value)

@@ -58,7 +58,7 @@ tables = [
 # Create the tables with the spec and register them with the framework
 #
 for table_spec in tables:
-    create_server_from_csv(table_spec["name"], table_spec["path"], table_server, {})
+    create_server_from_csv(table_spec["name"], table_spec["path"], table_server, {"Content-Type": "application/json"})
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
