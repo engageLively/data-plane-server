@@ -70,7 +70,7 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
-    def get_filtered_rows(self, table_name, filter_spec, headers):
+    def get_filtered_rows(self, table_name, filter_spec):
         """
             Args:
                 table_name: name of the table, String
@@ -95,14 +95,11 @@ class DataPlaneClient:
 
         # Throwing Exceptions if there is no table or column found
         try:
-            form_data = {
-                'table': table_name,
-                'filter': filter_spec,
-            }
             try:
-                full_url = f"{self.main_url}/get_filtered_rows?table_name={table_name}"
+                full_url = f"{self.main_url}/get_filtered_rows"
                 self.validate_url(full_url)
-                response = requests.post(full_url, data=form_data, headers=headers)
+                headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+                response = requests.post(full_url, json={"table": table_name, "filter": filter_spec}, headers=headers)
                 response.raise_for_status()
                 return response.json()
             except InvalidDataException as invalid_error:
