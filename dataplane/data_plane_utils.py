@@ -36,8 +36,7 @@ DATA_PLANE_DATE = 'date'
 DATA_PLANE_DATETIME = 'datetime'
 DATA_PLANE_TIME_OF_DAY = 'timeofday'
 
-
-DATA_PLANE_SCHEMA_TYPES = ['string', 'number', 'boolean', 'date', 'datetime','timeofday']
+DATA_PLANE_SCHEMA_TYPES = ['string', 'number', 'boolean', 'date', 'datetime', 'timeofday']
 
 '''
 Exceptions for the Data Plane
@@ -49,14 +48,12 @@ class Error(Exception):
     """Base class for other exceptions."""
 
 
-
 class InvalidDataException(Exception):
     '''
     An exception thrown when a data table (list of rows) doesn't match an accoompanying schema,
      or a bad schema is specified, or a table row is the wrong length, or..
     '''
+
     def __init__(self, message):
         super().__init__(message)
         self.message = message
-
-

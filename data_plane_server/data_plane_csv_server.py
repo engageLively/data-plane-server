@@ -56,7 +56,7 @@ from data_plane_server.table_server import Table
 from dataplane.conversion_utils import convert_row
 
 
-def create_server_from_csv(table_name, path_to_csv_file, table_server, headers = {}):
+def create_server_from_csv(table_name, path_to_csv_file, table_server, headers=None):
     '''
     Create a server from a CSV file.The file must meet the format for a RowTable:
     1. Each row must contain the same number of columns;
@@ -72,6 +72,8 @@ def create_server_from_csv(table_name, path_to_csv_file, table_server, headers =
          headers: any authorization headers (default {})
 
     '''
+    if headers is None:
+        headers = {}
     try:
         with open(path_to_csv_file, 'r') as f:
             r = csv.reader(f)
@@ -84,18 +86,19 @@ def create_server_from_csv(table_name, path_to_csv_file, table_server, headers =
         for entry in types: assert entry in DATA_PLANE_SCHEMA_TYPES
     except Exception as error:
         raise InvalidDataException(error)
-    
+
     schema = [{"name": columns[i], "type": types[i]} for i in range(num_columns)]
     column_type_list = [{"type": data_plane_type} for data_plane_type in types]
     try:
-        final_rows = [convert_row( row, column_type_list) for row in rows[2:]]
+        final_rows = [convert_row(row, column_type_list) for row in rows[2:]]
         data_plane_table = RowTable(schema, final_rows)
         data_server_table = Table(data_plane_table, headers)
         table_server.add_data_plane_table({"name": table_name, "table": data_server_table})
 
     except ValueError as error:
         raise InvalidDataException(f'{error} raised during type conversion')
-    
+
+
 class RemoteCSVTable(DataPlaneTable):
     '''
     A very common format for data interchange on the Internet is a downloadable
@@ -114,4 +117,3 @@ class RemoteCSVTable(DataPlaneTable):
         if self.dataFrame is None:
             self.dataframe = pd.read_csv(self.url)
         return self.dataframe.values.tolist()
-    

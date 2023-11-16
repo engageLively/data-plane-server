@@ -38,7 +38,8 @@ import pandas as pd
 
 import datetime
 
-from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
+from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, \
+    DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 
 DATA_PLANE_FILTER_FIELDS = {
     'ALL': {'arguments'},
@@ -55,11 +56,11 @@ DATA_PLANE_FILTER_OPERATORS = set(DATA_PLANE_FILTER_FIELDS.keys())
 def _convert_to_type(data_plane_type, value):
     '''
     Convert value to data_plane_type, so that comparisons can be done.  This is used to convert
-    the values in a filter_spec to a form that can be used in a filter.  
+    the values in a filter_spec to a form that can be used in a filter.
     Throws an InvalidDataException if the type can't be converted.
     An exception is Boolean, where "True, true, t" are all converted to True, but any
     other values are converted to False
-    
+
     Arguments:
         data_plane_type: type to convert to
         value: value to be converted
@@ -76,7 +77,7 @@ def _convert_to_type(data_plane_type, value):
     elif data_plane_type == DATA_PLANE_NUMBER:
         if isinstance(value, int) or isinstance(value, float):
             return value
-        
+
         # try an automated conversion to float.  If it fails, it still
         # might be an int in base 2, 8, or 16, so pass the error to try
         # all of those
@@ -88,17 +89,17 @@ def _convert_to_type(data_plane_type, value):
         # if we get here, it must be a string or won't convert
         if not isinstance(value, str):
             raise InvalidDataException(f'Cannot convert {value} to number')
-        
+
         # Try to convert to binary, octal, decimal
-        
+
         for base in [2, 8, 16]:
             try:
                 return int(value, base)
             except ValueError:
                 pass
-        #Everything has failed, so toss the exception
+        # Everything has failed, so toss the exception
         raise InvalidDataException(f'Cannot convert {value} to number')
-    
+
     elif data_plane_type == DATA_PLANE_BOOLEAN:
         if isinstance(value, bool):
             return value
@@ -117,7 +118,7 @@ def _convert_to_type(data_plane_type, value):
                 return datetime.datetime.fromisoformat(value)
             except Exception:
                 raise InvalidDataException(f"Can't convert {value} to datetime")
-        
+
     elif data_plane_type == DATA_PLANE_DATE:
         if type(value) == type(datetime.datetime.now().date()):
             return value
@@ -126,7 +127,7 @@ def _convert_to_type(data_plane_type, value):
                 return datetime.date.fromisoformat(value)
             except Exception:
                 raise InvalidDataException(f"Can't convert {value} to date")
-    else: # data_plane_type = DATA_PLANE_TIME_OF_DAT
+    else:  # data_plane_type = DATA_PLANE_TIME_OF_DAT
         if type(value) == type(datetime.datetime.now().time()):
             return value
         if isinstance(value, str):
@@ -134,7 +135,7 @@ def _convert_to_type(data_plane_type, value):
                 return datetime.time.fromisoformat(value)
             except Exception:
                 raise InvalidDataException(f"Can't convert {value} to time")
-     
+
         raise InvalidDataException(f"Couldn't convert {value} to {data_plane_type}")
 
 
@@ -153,6 +154,7 @@ def _convert_list_to_type(data_plane_type, value_list):
     '''
     return [_convert_to_type(data_plane_type, elem) for elem in value_list]
 
+
 def _convert_to_output_string(data_plane_type, value):
     '''
     This is the inverse of _convert_to_type: convert a value which is a data plane type to
@@ -168,11 +170,12 @@ def _convert_to_output_string(data_plane_type, value):
         return value
     else:
         return value.isoformat()
-    
+
+
 def _convert_list_to_string(data_plane_type, value_list):
     '''
     This is the inverse of _convert_list_to_type: convert a list of values from data plane type to
-    a list of strings. 
+    a list of strings.
     Arguments:
         data_plane_type: the type to convert from
         value_list: the value list to convert
@@ -181,12 +184,14 @@ def _convert_list_to_string(data_plane_type, value_list):
     '''
     return [_convert_to_output_string(data_plane_type, value) for value in value_list]
 
+
 def _canonize_set(any_set):
     # Canonize a set into a sorted list; this is useful to ensure that
     # error messages are deterministic
     result = list(any_set)
     result.sort()
     return result
+
 
 def check_valid_spec(filter_spec):
     '''
@@ -217,7 +222,7 @@ def check_valid_spec(filter_spec):
     # We don't throw an error for extra fields, just for missing fields. Since we're
     # going to use keys() to get the fields in the spec, and this will include the
     # operator, 'operator' is one of the fields
-    
+
     fields_in_spec = set(filter_spec.keys())
     missing_fields = DATA_PLANE_FILTER_FIELDS[operator] - fields_in_spec
     if len(missing_fields) > 0:
@@ -231,8 +236,8 @@ def check_valid_spec(filter_spec):
         for arg in filter_spec['arguments']:
             check_valid_spec(arg)
         return
-    # if we get here, it's IN_LIST, IN_RANGE, or REGEX_MATCH.  
-    
+    # if we get here, it's IN_LIST, IN_RANGE, or REGEX_MATCH.
+
     # For IN_LIST, check that the values argument is a list
     if operator == 'IN_LIST':
         values_type = type(filter_spec['values'])
@@ -240,14 +245,14 @@ def check_valid_spec(filter_spec):
             msg = f'The Values argument to IN_LIST must be a list, not {values_type}'
             raise InvalidDataException(msg)
     elif operator == 'REGEX_MATCH':
-        
+
         # check to make sure the expression argument is a valid regex
         try:
             re.compile(filter_spec['expression'])
         except TypeError:
             msg = f'Expression {filter_spec["expression"]} is not a valid regular expression'
             raise InvalidDataException(msg)
-    
+
     elif operator == 'IN_RANGE':
         primitive_types = {str, int, float, bool}
         # even though dates, datetimes, and times are allowable, they must be strings
@@ -265,11 +270,11 @@ def check_valid_spec(filter_spec):
 
         try:
             # max_val and min_val must be comparable
-             result = filter_spec['max_val'] > filter_spec['min_val']
+            result = filter_spec['max_val'] > filter_spec['min_val']
         except TypeError:
             msg = f'max_val {filter_spec["max_val"]} and min_val {filter_spec["min_val"]} must be comparable for an IN_RANGE filter'
             raise InvalidDataException(msg)
-               
+
 
 def _valid_column_spec(column):
     # True iff column is a dictionary with keys "name", "type"
@@ -277,14 +282,14 @@ def _valid_column_spec(column):
         keys = column.keys()
         return 'name' in keys and 'type' in keys
     return False
-    
+
 
 class DataPlaneFilter:
     '''
     A Class which implements a Filter used  to filter rows.
     The arguments to the contstructor are a filter_spec, which is a boolean tree
     of filters and the columns which the filter is implemented over.
-    
+
     This is designed to be instantiated from DataPlaneTable.get_filtered_rows()
     and in no other place -- error checking, if any, should be done there.
 
@@ -292,6 +297,7 @@ class DataPlaneFilter:
         filter_spec: a Specification of the filter as a dictionary.
         columns: the columns in the form of a list {"name", "type"}
     '''
+
     def __init__(self, filter_spec, columns):
         check_valid_spec(filter_spec)
         bad_columns = [column for column in columns if not _valid_column_spec(column)]
@@ -309,17 +315,18 @@ class DataPlaneFilter:
                 self.column_type = column_types[self.column_index]
             except ValueError as original_error:
                 raise InvalidDataException(f'{filter_spec["column"]} is not a valid column name')
-            
+
             if self.operator == 'IN_LIST':
                 self.value_list = _convert_list_to_type(self.column_type, filter_spec['values'])
-            elif self.operator == 'IN_RANGE': # operator is IN_RANGE
+            elif self.operator == 'IN_RANGE':  # operator is IN_RANGE
                 max_val = _convert_to_type(self.column_type, filter_spec['max_val'])
                 min_val = _convert_to_type(self.column_type, filter_spec['min_val'])
                 self.max_val = max_val if max_val >= min_val else min_val
                 self.min_val = min_val if min_val <= max_val else max_val
-            else: # operator is REGEX_MATCH
+            else:  # operator is REGEX_MATCH
                 if column_types[self.column_index] != DATA_PLANE_STRING:
-                    raise InvalidDataException(f'The column type for a REGEX filter must be DATA_PLANE_STRING, not {column_types[self.column_index]}')
+                    raise InvalidDataException(
+                        f'The column type for a REGEX filter must be DATA_PLANE_STRING, not {column_types[self.column_index]}')
                 # note we've already checked for expression and that it's valid
                 self.regex = re.compile(filter_spec['expression'])
                 # hang on to the original expression for later jsonification
@@ -346,12 +353,11 @@ class DataPlaneFilter:
             if self.operator == 'IN_LIST':
                 result["values"] = _convert_list_to_string(self.column_type, self.value_list)
             elif self.operator == 'IN_RANGE':
-                result["max_val"] = _convert_to_output_string(self.column_type,  self.max_val)
+                result["max_val"] = _convert_to_output_string(self.column_type, self.max_val)
                 result["min_val"] = _convert_to_output_string(self.column_type, self.min_val)
-            else: # operator == 'REGEX_MATCH'
+            else:  # operator == 'REGEX_MATCH'
                 result["expression"] = self.expression
         return result
-
 
     def filter(self, rows):
         '''
@@ -379,7 +385,7 @@ class DataPlaneFilter:
 
         Returns:
             INDICES of the rows which pass the filter, AS A SET
- 
+
         '''
         all_indices = range(len(rows))
         if self.operator == 'ALL':
@@ -397,11 +403,12 @@ class DataPlaneFilter:
             return set([i for i in all_indices if values[i] in self.value_list])
         elif self.operator == 'IN_RANGE':
             return set([i for i in all_indices if values[i] <= self.max_val and values[i] >= self.min_val])
-        else: # self.operator == 'REGEX_MATCH'
+        else:  # self.operator == 'REGEX_MATCH'
             return set([i for i in all_indices if self.regex.fullmatch(values[i]) is not None])
-        
+
+
 def _select_entries_from_row(row, indices):
-    # Pick the entries of row trhat are in indices, maintaining the order of the 
+    # Pick the entries of row trhat are in indices, maintaining the order of the
     # indices.  This is to support the column-choice operation in DataPlaneTable.get_filtered_rows
     # Arguments:
     #     row: the tow of vaslues
@@ -415,6 +422,8 @@ DEFAULT_HEADER_VARIABLES = {"required": [], "optional": []}
 '''
 The Default for header variables for a table is both required and optional lists are empty.
 '''
+
+
 class DataPlaneTable:
     '''
     A DataPlaneTable: This is instantiated with a function get_rows() which  delivers the
@@ -432,6 +441,7 @@ class DataPlaneTable:
             or both can be empty.  The variables (and their values) are
             passed with each table request
     '''
+
     def __init__(self, schema, get_rows, header_variables=None):
         self.is_dataplane_table = True
         self.schema = schema
@@ -465,9 +475,8 @@ class DataPlaneTable:
             return None
         else:
             return matches[0]
-       
 
-    def all_values(self, column_name:str):
+    def all_values(self, column_name: str):
         '''
         get all the values from column_name
         Arguments:
@@ -484,11 +493,11 @@ class DataPlaneTable:
             raise InvalidDataException(f'{column_name} is not a column of this table') from original_error
         data_plane_type = self.schema[index]["type"]
         rows = self.get_rows()
-        result =  _convert_list_to_type(data_plane_type, list(set([row[index] for row in rows])))
+        result = _convert_list_to_type(data_plane_type, list(set([row[index] for row in rows])))
         result.sort()
         return result
 
-    def range_spec(self, column_name:str):
+    def range_spec(self, column_name: str):
         '''
         Get the dictionary {min_val, max_val} for column_name
         Arguments:
@@ -502,15 +511,12 @@ class DataPlaneTable:
         entry = [column for column in self.schema if column["name"] == column_name]
         if len(entry) == 0:
             raise InvalidDataException(f'{column_name} is not a column of this table')
-        
-        values = self.all_values(column_name)
-       
-        return {"max_val": values[-1], "min_val": values[0]}
-    
-    
-            
 
-    def get_filtered_rows(self, filter_spec = None, columns = []):
+        values = self.all_values(column_name)
+
+        return {"max_val": values[-1], "min_val": values[0]}
+
+    def get_filtered_rows(self, filter_spec=None, columns=[]):
         '''
         Filter the rows according to the specification given by filter_spec.
         Returns the rows for which the resulting filter returns True.
@@ -522,12 +528,12 @@ class DataPlaneTable:
             The subset of self.get_rows() which pass the filter
         '''
         # Note that we don't check if the column names are all valid
-        if columns is None: columns = [] # Make sure there's a value
+        if columns is None: columns = []  # Make sure there's a value
         if filter_spec is None:
             rows = self.get_rows()
         else:
             made_filter = DataPlaneFilter(filter_spec, self.schema)
-            rows =  made_filter.filter(self.get_rows())
+            rows = made_filter.filter(self.get_rows())
         if columns == []:
             return rows
         else:
@@ -536,29 +542,31 @@ class DataPlaneTable:
             return [_select_entries_from_row(row, column_indices) for row in rows]
 
 
-
 class RowTable(DataPlaneTable):
     '''
-    A simple utility class to serve data from a static list of rows, which 
-    can be constructed from a CSV file, Excel File, etc.  The idea is to 
-    make it easy for users to create and upload simple datasets to be 
+    A simple utility class to serve data from a static list of rows, which
+    can be constructed from a CSV file, Excel File, etc.  The idea is to
+    make it easy for users to create and upload simple datasets to be
     served from a general-purpose server.  Note that this will need some
     authentication.
     '''
+
     def __init__(self, schema, rows):
         super(RowTable, self).__init__(schema, self._get_rows)
         self.rows = rows
-    
+
     def _get_rows(self):
         '''
         Very simple: just return the rows
         '''
         return self.rows
-    
-def _convert_to_string(s):
-   return s if isinstance(s, str) else str(s) 
 
-def _convert_to_number(x, default_value = nan):
+
+def _convert_to_string(s):
+    return s if isinstance(s, str) else str(s)
+
+
+def _convert_to_number(x, default_value=nan):
     # Convert x to a number, or nan if there is no conversion
     if (isinstance(x, int) or isinstance(x, float)):
         return x
@@ -571,7 +579,8 @@ def _convert_to_number(x, default_value = nan):
     except ValueError:
         return default_value
 
-def _convert_to_time(t, format_string = None, default_value = datetime.time(0, 0, 0)):
+
+def _convert_to_time(t, format_string=None, default_value=datetime.time(0, 0, 0)):
     if isinstance(t, datetime.time):
         return t
     if isinstance(t, datetime.date):
@@ -590,7 +599,8 @@ def _convert_to_time(t, format_string = None, default_value = datetime.time(0, 0
             return default_value
     return default_value
 
-def _convert_to_date(d, format_string = None, default_value = datetime.date(1900, 1, 1)):
+
+def _convert_to_date(d, format_string=None, default_value=datetime.date(1900, 1, 1)):
     if isinstance(d, datetime.date):
         return d
     if isinstance(d, datetime.time):
@@ -609,11 +619,13 @@ def _convert_to_date(d, format_string = None, default_value = datetime.date(1900
             return default_value
     return default_value
 
-def _convert_to_datetime(dt,  format_string = None, default_value = datetime.datetime(1900, 1, 1, 0, 0, 0)):
+
+def _convert_to_datetime(dt, format_string=None, default_value=datetime.datetime(1900, 1, 1, 0, 0, 0)):
     if isinstance(dt, datetime.datetime):
         return dt
     if isinstance(dt, datetime.time):
-        return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute, dt.second)
+        return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute,
+                                 dt.second)
     if isinstance(dt, datetime.date):
         return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0)
     if isinstance(dt, str):
@@ -628,10 +640,8 @@ def _convert_to_datetime(dt,  format_string = None, default_value = datetime.dat
             return default_value
     return default_value
 
-        
-    
 
-def _coerce_types(series, data_plane_type, column_default = None):
+def _coerce_types(series, data_plane_type, column_default=None):
     # Internal use, coercing a series (from a CSV or a dataframe) to the
     # desired data plane type.
     # ATM, no heroic conversion is being done -- eventually we will have to
@@ -648,7 +658,6 @@ def _coerce_types(series, data_plane_type, column_default = None):
         return [_convert_to_date(d) for d in series]
     if data_plane_type == DATA_PLANE_DATETIME:
         return [_convert_to_datetime(dt) for dt in series]
-    
 
 
 class RemoteCSVTable(DataPlaneTable):

@@ -8,11 +8,11 @@ from table_data_good import names, ages, dates, datetimes, times, booleans, seri
 This generates the tests/filter_tests.py file, which is used to test  the primitive (IN_LIST, IN_RANGE, REGEX_MATCH)
 filters of the DataPlane.  A test is a pair (filter_spec, expected_indices) and this code
 generates a large set of those pairs  which are then used by the tester to do the actual tests.
-The test is just instantiating the filter from the spec, running the filter on the table formed 
+The test is just instantiating the filter from the spec, running the filter on the table formed
 from the series in table_data_good.py
 '''
 
-# The name is the name of the column in the table, the value is the series which formes the 
+# The name is the name of the column in the table, the value is the series which formes the
 # column
 
 series_for_name = {'name': names, 'age': ages, 'date': dates, 'time': times,
@@ -60,10 +60,10 @@ def make_in_list_test(column, values):
     Parameters:
         column: name of the column
         values: list of values to be searched
-        
+
     Returns:
         An object with fields spec, the spec to be turned into the filter, and expected,
-        the row indices with entries in the series associated with the column whose value is 
+        the row indices with entries in the series associated with the column whose value is
         in values
 
     '''
@@ -80,7 +80,7 @@ def make_regex_test(column, expression):
     Parameters:
         column: name of the column
         expression: expression to be matched
-        
+
     Returns:
         An object with fields spec, the spec to be turned into the filter, and expected,
         the row indices with entries in the series associated with the column which do a fullmatch
@@ -123,7 +123,7 @@ def generate_regex_test(column):
     '''
     Generate a random regex test for column, picking out an  element at random
     and simply changing the first and last letter to .*, and then using make_regex_test to generate the test.
-    If it's only two  letters long, changes the first letter to .* and appends .*, and 
+    If it's only two  letters long, changes the first letter to .* and appends .*, and
     it if's only one letter long, appends and prepends .*
     Parameters:
         column: the name of the column to generate the test for
@@ -203,7 +203,7 @@ tests = {
 
 
 # Pretty print the tests on tests/filter_tests.py, so they can be read in by the tester
-with (open('tests/filter_tests.py', 'w') as f):
+with open('tests/filter_tests.py', 'w') as f:
     f.writeln('import datetime')
     f.writeln("'''")
     f.writeln("This file is auto-generated, do not change.  The source code to generate this file is in")
