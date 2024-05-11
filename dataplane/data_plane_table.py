@@ -406,7 +406,35 @@ class DataPlaneFilter:
         else:  # self.operator == 'REGEX_MATCH'
             return set([i for i in all_indices if self.regex.fullmatch(values[i]) is not None])
 
-
+    def get_all_column_values_in_filter(self, column_name):
+        '''
+        Return the set of all values in operators for column column_name.  This is for the 
+        case where a back-end process (e.g., a SQL stored procedure) takes parameter values
+        for specific columns, and we want to use the values here to select at the source.
+        Arguments:
+             column_name: the name of the column to get all the values for
+        Returns:
+             A SET of all of the values for the column
+        '''
+        if column_name is None:
+            return set()
+        if type(column_name) != str:
+            return set()
+        if self.operator in ['ALL', 'ANY', 'NONE']:
+            values = set()
+            # I'd like to use a comprehension here, but I'm not sure how it interacts with union
+            for argument in self.arguments:
+                values = values.union(argument.get_all_column_values_in_filter(column_name))
+            return values
+        if column_name != self.column_name:
+            return set()
+        if self.operator == 'IN_LIST':
+            return set(self.value_list)
+        if self.operator == 'IN_RANGE':
+            return {self.max_val, self.min_val} 
+        # must be REGEX_MATCH
+        return {self.expression}
+        
 def _select_entries_from_row(row, indices):
     # Pick the entries of row trhat are in indices, maintaining the order of the
     # indices.  This is to support the column-choice operation in DataPlaneTable.get_filtered_rows
