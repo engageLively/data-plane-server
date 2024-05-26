@@ -40,7 +40,7 @@ import pytest
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
 from dataplane.data_plane_utils import check_dataplane_type_of_list
 from dataplane.data_plane_utils import jsonifiable_value, jsonifiable_column
-from dataplane.data_plane_table import DataPlaneTable, RowTable, DataFrameTable, RemoteDataPlaneTable
+from dataplane.data_plane_table import DataPlaneFixedTable, RowTable, DataFrameTable, RemoteDataPlaneTable
 from pytest_httpserver import HTTPServer
 
 table_test_1 = {
@@ -52,7 +52,7 @@ table_test_1 = {
 }
 
 def _makeTable():
-    return  DataPlaneTable(table_test_1["schema"], lambda: table_test_1["rows"])
+    return  DataPlaneFixedTable(table_test_1["schema"], lambda: table_test_1["rows"])
 
 def test_create():
     '''

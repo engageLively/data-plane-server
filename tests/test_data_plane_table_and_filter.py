@@ -28,7 +28,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-Run tests on the dashboard table
+Run tests on the dashboard table and filter interaction, primarily get_filtered_rows
 '''
 
 import csv
@@ -40,7 +40,8 @@ import random
 import pandas as pd
 import pytest
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
-from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
+from dataplane.data_plane_filter import DataPlaneFilter
+from dataplane.data_plane_table import RowTable
 
 
 
@@ -49,9 +50,19 @@ from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, check_va
 # the filters actually filter the data properly.  We will use the following table for tests:
 
 
+from tests.table_data_good import names, ages, dates, times, datetimes, booleans
+rows = [[names[i], ages[i], dates[i], times[i], datetimes[i], booleans[i]] for i in range(len(names))]
 
+schema = [
+    {"name": "name", "type": DATA_PLANE_STRING},
+    {"name": "age", "type": DATA_PLANE_NUMBER},
+    {"name": "date", "type": DATA_PLANE_DATE},
+    {"name": "time", "type": DATA_PLANE_TIME_OF_DAY},
+    {"name": "datetime", "type": DATA_PLANE_DATETIME},
+    {"name": "boolean", "type": DATA_PLANE_BOOLEAN}
+]
 
-table = DataPlaneTable(schema, lambda:  rows)
+table = RowTable(schema, rows)
 
 
 def _compare_indices(filter_spec, reference_indices):

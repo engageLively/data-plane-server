@@ -66,25 +66,34 @@ The Default for header variables for a table is both required and optional lists
 
 class DataPlaneTable:
     '''
-    A DataPlaneTable: This is instantiated with a function get_rows() which  delivers the
-    rows, rather than having them explicitly in the Table.  Note that get_rows() *must* return 
-    a list of rows, each of which has the appropriate number of entries of the appropriate types.
-    The invariant is that each 
-
+    A DataPlaneTable.  This is the abstract superclass for all data plane tables, and 
+    implements the schema methods of every DataPlane class.  The data methods are implemented
+    by the concrete classes.  Any new DataPlaneTable class should:
+    1. Subclass DataPlaneTable
+    2. Have a constructor with the argument schema
+    3. call super(<classname, self).__init__(schema) in the constructor
+    4. Implement the methods:
+        (a) all_values(self, column_name, jsonify = False)
+        (b) range_spec(self, column_name, jsonify = False)
+        (c) get_filtered_rows_from_filter(self, filter, columns = None, jsonify = False)
+        (d) to_json(self)
+    where:
+        i. column_name is the name of the column to get the values/range_spec from
+        ii. if jsonify = True, return the results as a JSON string, otherwise just as the 
+            appropriate structure
+            iia. list from all_values
+            iib. dict "max_val", "min_val" from range_spec
+            iic. list of lists from get_filtered_rows_from_filter)
+        iii. filter is a an instance of DataPlaneFilter
+        iv. if columns is not None for get_filtered_rows, only return entries from those columns
+            in the result from get_filtered_rows
     Arguments:
         schema: a list of records of the form {"name": <column_name, "type": <column_type>}.
            The column_type must be a type from galyleo_constants.DATA_PLANE_TYPES.
-        get_rows: a function which returns a list of list of values.  Each component list
-            must have the same length as schema, and the jth element must be of the
-            type specified in the jth element of schema
     '''
-
-    def __init__(self, schema, get_rows):
-        self.is_dataplane_table = True
+    def __init__(self, schema):
         self.schema = schema
-        self.get_rows = get_rows
-
-    # This is used to get the names of a column from the schema
+        self.is_dataplane_table = True
 
     def column_names(self):
         '''
@@ -111,7 +120,101 @@ class DataPlaneTable:
             return None
         else:
             return matches[0]
+    
+    def all_values(self, column_name: str, jsonify = False):
+        '''
+        get all the values from column_name
+        Arguments:
+            column_name: name of the column to get the values for
+            jsonify: if true, return the result in a form that can be turned
+                into json 
 
+        Returns:
+            List of the values, either in json form (if jsonify = True) or in the
+            appropriate datatyp (if jsonify = False)
+
+        '''
+        raise InvalidDataException(f'all_values has not been in {type(self)}.__name__')
+    
+    
+
+    def range_spec(self, column_name: str, jsonify = False):
+        '''
+        Get the dictionary {min_val, max_val} for column_name
+        Arguments:
+
+            column_name: name of the column to get the range spec for
+
+        Returns:
+            the minimum and  maximum of the column
+
+        '''
+        raise InvalidDataException(f'range_spec has not been in {type(self)}.__name__')
+    
+    def get_filtered_rows_from_filter(self, filter=None, columns=[], jsonify = False):
+        '''
+        Returns the rows for which the  filter returns True.  Returns as 
+        a json list if jsonify is True, as a list of the appropriate types otherwise
+
+        Arguments:
+            filter: A DataPlaneFilter 
+            columns: the names of the columns to return.  Returns all columns if absent
+            jsonify: if True, returns a JSON list
+        Returns:
+            The subset of self.get_rows() which pass the filter as a JSON list if
+            jsonify is True or as a list if jsonify is False
+        '''
+        raise InvalidDataException(f'get_filtered_rows_from_filter has not been in {type(self)}.__name__')
+
+
+    def get_filtered_rows(self, filter_spec=None, columns=[], jsonify = False):
+        '''
+        Filter the rows according to the specification given by filter_spec.
+        Returns the rows for which the resulting filter returns True.Returns as 
+        a json list if jsonify is True, as a list of the appropriate types otherwise
+
+        Arguments:
+            filter_spec: Specification of the filter, as a dictionary
+            columns: the names of the columns to return.  Returns all columns if absent
+            jsonify: if True, returns a JSON list
+        Returns:
+            The subset of self.get_rows() which pass the filter as a JSON list if
+            jsonify is True or as a list if jsonify is False
+        '''
+        # Note that we don't check if the column names are all valid
+        return self.get_filtered_rows_from_filter(filter = DataPlaneFilter(filter_spec, self.schema), columns=columns, jsonify=jsonify)
+    
+    def to_json(self):
+        '''
+        Return the JSON form of this table, for saving on disk or transmission.
+        '''
+        raise InvalidDataException(f'to_json has not been in {type(self)}.__name__')
+
+class DataPlaneFixedTable(DataPlaneTable):
+    '''
+    A DataPlaneFixedTable: This is a convenience class for subclasses which generate a fixed 
+    number of rows locally, independent of filtering. This is instantiated with a function get_rows() which  delivers the
+    rows, rather than having them explicitly in the Table.  Note that get_rows() *must* return 
+    a list of rows, each of which has the appropriate number of entries of the appropriate types.
+    all_values, range_spec, and get_filtered_rows_from_filter are all implemented on top of 
+    get_rows.  Note that these methods can be overridden in a subclass if there is a
+    more efficient method than the obvious implementation, which is what's implemented here.
+
+    Arguments:
+        schema: a list of records of the form {"name": <column_name, "type": <column_type>}.
+           The column_type must be a type from galyleo_constants.DATA_PLANE_TYPES.
+        get_rows: a function which returns a list of list of values.  Each component list
+            must have the same length as schema, and the jth element must be of the
+            type specified in the jth element of schema
+    '''
+
+    def __init__(self, schema, get_rows):
+        super(DataPlaneFixedTable, self).__init__(schema)
+        self.get_rows = get_rows
+
+    # This is used to get the names of a column from the schema
+
+    
     def all_values(self, column_name: str, jsonify = False):
         '''
         get all the values from column_name
@@ -194,24 +297,6 @@ class DataPlaneTable:
         return jsonifiable_rows(result) if jsonify else result
 
 
-    def get_filtered_rows(self, filter_spec=None, columns=[], jsonify = False):
-        '''
-        Filter the rows according to the specification given by filter_spec.
-        Returns the rows for which the resulting filter returns True.Returns as 
-        a json list if jsonify is True, as a list of the appropriate types otherwise
-
-        Arguments:
-            filter_spec: Specification of the filter, as a dictionary
-            columns: the names of the columns to return.  Returns all columns if absent
-            jsonify: if True, returns a JSON list
-        Returns:
-            The subset of self.get_rows() which pass the filter as a JSON list if
-            jsonify is True or as a list if jsonify is False
-        '''
-        # Note that we don't check if the column names are all valid
-        return self.get_filtered_rows_from_filter(filter = DataPlaneFilter(filter_spec, self.schema), columns=columns, jsonify=jsonify)
-        
-
     def to_dataframe(self):
         '''
         Convert the table to a PANDAS DataFrame.  This is very straightforward; just 
@@ -236,7 +321,7 @@ class DataPlaneTable:
 
     
 
-class DataFrameTable(DataPlaneTable):
+class DataFrameTable(DataPlaneFixedTable):
     '''
     A simple utility class to serve data from a PANDAS DataFrame.  The general idea is 
     that the values are in the PANDAS Dataframe, which must have the same column names
@@ -266,7 +351,7 @@ class DataFrameTable(DataPlaneTable):
         return self.dataframe.copy()
 
 
-class RowTable(DataPlaneTable):
+class RowTable(DataPlaneFixedTable):
     '''
     A simple utility class to serve data from a static list of rows, which
     can be constructed from a CSV file, Excel File, etc.  The idea is to
@@ -296,7 +381,7 @@ class  RemoteCSVTable(DataFrameTable):
     '''
 
     def __init__(self, schema, url):
-        super(schema, self.get_rows)
+        super(RemoteCSVTable, self).__init__(schema, self.get_rows)
         self.url = url
         self.reset_dataframe()
 
@@ -323,7 +408,7 @@ class  RemoteCSVTable(DataFrameTable):
 def _column_names(schema):
     return [entry["name"] for entry in schema]
         
-class RemoteDataPlaneTable:
+class RemoteDataPlaneTable(DataPlaneTable):
     '''
     A DataPlane Table on a remote server.  This just has a schema, an URL, and 
     header variables. This is the primary class for the client side of the DataPlane,
@@ -341,6 +426,7 @@ class RemoteDataPlaneTable:
 
     ''' 
     def __init__(self, table_name, schema, url, header_dict = None): 
+        super(RemoteDataPlaneTable, self).__init__(schema)
         self.url = url
         self.schema = schema
         self.table_name = table_name
@@ -393,31 +479,7 @@ class RemoteDataPlaneTable:
         
         # also check to make sure that we can authenticate to the table.  See /get_table_spec
 
-    def column_names(self):
-        '''
-        Return the names of the columns
-        '''
-        return [column["name"] for column in self.schema]
-
-    def column_types(self):
-        '''
-        Return the types of the columns
-        '''
-        return [column["type"] for column in self.schema]
-
-    def get_column_type(self, column_name):
-        '''
-        Returns the type of column column_name, or None if this table doesn't have a column with
-        name  column_name.
-
-        Arguments:
-            column_name: name of the column to get the type for
-        '''
-        matches = [column["type"] for column in self.schema if column["name"] == column_name]
-        if len(matches) == 0:
-            return None
-        else:
-            return matches[0]
+    
         
     def _check_column_and_get_type(self, column_name):
          if not column_name in self.column_names():
@@ -538,99 +600,3 @@ class RemoteDataPlaneTable:
             return convert_rows_to_type_list(data_plane_type_list, jsonified_list)
         
                     
-# def _convert_to_string(s):
-#     return s if isinstance(s, str) else str(s)
-
-
-# def _convert_to_number(x, default_value=nan):
-#     # Convert x to a number, or nan if there is no conversion
-#     if (isinstance(x, int) or isinstance(x, float)):
-#         return x
-#     try:
-#         return float(x)
-#     except ValueError:
-#         pass
-#     try:
-#         return int(x)
-#     except ValueError:
-#         return default_value
-
-
-# def _convert_to_time(t, format_string=None, default_value=datetime.time(0, 0, 0)):
-#     if isinstance(t, datetime.time):
-#         return t
-#     if isinstance(t, datetime.date):
-#         return default_value
-#     if isinstance(t, datetime.datetime):
-#         return t.time()
-#     if isinstance(t, str):
-#         if format_string:
-#             try:
-#                 return datetime.dateime.strptime(t, format_string).time()
-#             except ValueError:
-#                 return default_value
-#         try:
-#             return datetime.time.fromisoformat(t)
-#         except ValueError:
-#             return default_value
-#     return default_value
-
-
-# def _convert_to_date(d, format_string=None, default_value=datetime.date(1900, 1, 1)):
-#     if isinstance(d, datetime.date):
-#         return d
-#     if isinstance(d, datetime.time):
-#         return default_value
-#     if isinstance(d, datetime.datetime):
-#         return d.date()
-#     if isinstance(d, str):
-#         if format_string:
-#             try:
-#                 return datetime.datetime.strptime(d, format_string).date()
-#             except ValueError:
-#                 return default_value
-#         try:
-#             return datetime.date.fromisoformat(d)
-#         except ValueError:
-#             return default_value
-#     return default_value
-
-
-# def _convert_to_datetime(dt, format_string=None, default_value=datetime.datetime(1900, 1, 1, 0, 0, 0)):
-#     if isinstance(dt, datetime.datetime):
-#         return dt
-#     if isinstance(dt, datetime.time):
-#         return datetime.datetime(default_value.year, default_value.month, default_value.day, dt.hour, dt.minute,
-#                                  dt.second)
-#     if isinstance(dt, datetime.date):
-#         return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0)
-#     if isinstance(dt, str):
-#         if format_string:
-#             try:
-#                 return datetime.dateime.strptime(dt, format_string)
-#             except ValueError:
-#                 return default_value
-#         try:
-#             return datetime.datetime.fromisoformat(dt)
-#         except ValueError:
-#             return default_value
-#     return default_value
-
-
-# def _coerce_types(series, data_plane_type, column_default=None):
-#     # Internal use, coercing a series (from a CSV or a dataframe) to the
-#     # desired data plane type.
-#     # ATM, no heroic conversion is being done -- eventually we will have to
-#     # add a pretty significant ETL component
-#     if data_plane_type == DATA_PLANE_STRING:
-#         return [_convert_to_string(x) for x in series]
-#     if data_plane_type == DATA_PLANE_NUMBER:
-#         return [_convert_to_number(x) for x in series]
-#     if data_plane_type == DATA_PLANE_BOOLEAN:
-#         return [True if b else False for b in series]
-#     if data_plane_type == DATA_PLANE_TIME_OF_DAY:
-#         return [_convert_to_time(t) for t in series]
-#     if data_plane_type == DATA_PLANE_DATE:
-#         return [_convert_to_date(d) for d in series]
-#     if data_plane_type == DATA_PLANE_DATETIME:
-#         return [_convert_to_datetime(dt) for dt in series]
