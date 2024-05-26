@@ -1,18 +1,16 @@
 '''
-A framework to easily and quickly implement a web server which serves tables according to
-the Data Plane Rest  protocol.  This implements the URL methods get_filtered_rows, get_all_values,
-and get_numeric_spec.  It parses the arguments, checking for errors, takes the
-table argument, looks up the appropriate DataPlaneTable to serve for that table, and
-then calls the method on that server to serve the request.  If no exception is thrown,
-returns a 200 with the result as a JSON structure, and if an exception is thrown, returns
-a 400 with an approrpriate error message.
-All of the methods here except for add_data_plane_table are simply route targets: none are
-designed for calls from any method other than flask.
-The way to use this is very simple:
-1. For each Table to be served, create an instance of data_plane_table.DataPlaneTable
-2. Call add_data_plane_table(table_name, data_plane_table)
-After that, requests for the named table will be served by the created data server.
+Middleware for a server deployment.  This is designed
+to sit between the DataPlane objects (in dataplane)
+and a server.  These objects provide two principal
+functions:
+1. Keep the set of tables by name
+2. Handle authentication on a table-specific basis
+3. Convert results into the wire format for transmission
 
+There are two major classes: 
+1. Table, which provides a wrapper around the DataPlane Table with the table's
+   name, authentication requirememts, and result-conversion utilities
+2. TableServer, which provides a registry and lookup service to Tables
 '''
 
 # BSD 3-Clause License
@@ -154,6 +152,10 @@ class Table:
         list of variable names required for authorization,
         '''
         return list(self.header_dict.keys())
+    
+
+    
+
 
 
 def build_table_spec(filename):
@@ -184,10 +186,7 @@ def build_table_spec(filename):
         table_spec = load(file)
 
     table = table_spec["table"]
-    types = [column["type"] for column in table["schema"]]
-
-    rows = [_convert_row(row, types) for row in table["rows"]]
-    row_table = RowTable(table["schema"], rows)
+    row_table = RowTable(table["schema"], table_spec["rows"])
     headers = table_spec['headers'] if 'headers' in table_spec else []
     return {
         "name": table_spec["name"],
@@ -279,7 +278,7 @@ class TableServer:
             table_name: name of the table to search for
             headers: dictionary of header variables and values
         Returns:
-            The DatePlaneTable corresponding to the request
+            The DataPlane table corresponding to the request
         Raises:
             TableNotFoundException if the table is not found
             TableNotAuthorizedException if access to the table is not authorized

@@ -54,7 +54,7 @@ import pandas as pd
 
 from flask import Blueprint, abort, jsonify, request
 
-from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY
+from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, jsonifiable_column, jsonifiable_row, jsonifiable_rows, jsonifiable_value
 
 from dataplane.data_plane_utils import InvalidDataException
 from dataplane.data_plane_table import check_valid_spec
@@ -64,9 +64,6 @@ from data_plane_server.table_server import TableServer, TableNotFoundException, 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
 table_server = TableServer()
-
-NON_JSONIFIABLE_TYPES = {DATA_PLANE_DATE, DATA_PLANE_TIME_OF_DAY, DATA_PLANE_DATETIME}
-
 
 def _log_and_abort(message, code=400):
     '''
@@ -112,59 +109,6 @@ def _get_table(request_api):
     table_name = request.args.get('table_name')
     return _table_server_if_authorized(request_api, table_name)
 
-
-def _jsonifiable_value(value, column_type):
-    '''
-    Internal use.  Python doesn't jsonify dates, datetimes, or times properly, so
-    convert them to isoformat strings.  Return everything else as is
-    Arguments:
-        value -- the value to be converted
-        column_type -- the data plane type of the value
-    Returns
-        A jsonifiable form of the value
-    '''
-    if column_type in NON_JSONIFIABLE_TYPES:
-        return value.isoformat()
-    else:
-        return value
-
-
-def _jsonifiable_row_(row, column_types):
-    '''
-    Internal use.  Return the jsonified form of the row, using _jsonifiable_value for each element
-    Arguments:
-        row -- the row to be converted
-        column_types -- the types of each element of the row
-    Returns
-        A row of jsonifiable values
-    '''
-    return [_jsonifiable_value(row[i], column_types[i]) for i in range(len(row))]
-
-
-def _jsonifiable_rows_(rows, column_types):
-    '''
-    Internal use.  Return the jsonifiable form of the list of rows, using _jsonifiable_row for each row
-    Arguments:
-        rows -- the list of rows to be converted
-        column_types -- the types of each element of the row
-    Returns
-        A list of rows  of jsonified values
-    '''
-    return [_jsonifiable_row_(row, column_types) for row in rows]
-
-
-def _jsonifiable_column(column, column_type):
-    '''
-    Internal use.  Return a jsonifiable version of the column of values, using _jsonifiable_value
-    to do the conversion.  We actually cheat a little, only calling _jsonifiable_value if column_type
-    is one od DATA_PLANE_TIME, DATA_PLANE_DATE, DATA_PLANE_DATETIME
-    '''
-    if column_type in NON_JSONIFIABLE_TYPES:
-        return [_jsonifiable_value(value, column_type) for value in column]
-    else:
-        return column
-
-
 def _column_type(table_name, column):
     '''
     An internal method to get the type of column column in the table of name table_name.
@@ -207,7 +151,7 @@ def _column_types(table, columns):
 #     return jsonify(request.json)
 
 
-@data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST', 'GET'])
+@data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
 def get_filtered_rows():
     '''
     Get the filtered rows from a request.   Gets the filter_spec from the filter  field in the body, the table name from the table field
@@ -251,7 +195,7 @@ def get_filtered_rows():
             _log_and_abort(invalid_error)
     result = table.get_filtered_rows(filter_spec=filter_spec, columns=columns)
     types = _column_types(table, columns)
-    jsonifiable_result = _jsonifiable_rows_(result, types)
+    jsonifiable_result = jsonifiable_rows(result, types)
 
     return jsonify(jsonifiable_result)
 
@@ -286,10 +230,10 @@ def get_range_spec():
     table_name = request.args.get('table_name')
     try:
         result = table_server.get_range_spec(table_name, column_name, request.headers)
-        type = _column_type(table_name, column_name)
+        dataplane_type = _column_type(table_name, column_name)
         jsonifiable_result = {
-            "max_val": _jsonifiable_value(result["max_val"], type),
-            "min_val": _jsonifiable_value(result["min_val"], type),
+            "max_val": jsonifiable_value(result["max_val"], dataplane_type ),
+            "min_val": jsonifiable_value(result["min_val"], dataplane_type ),
         }
         return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
@@ -315,8 +259,8 @@ def get_all_values():
     table_name = request.args.get('table_name')
     try:
         result = table_server.get_all_values(table_name, column_name, request.headers)
-        type = _column_type(table_name, column_name)
-        jsonifiable_result = _jsonifiable_column(result, type)
+        dataplane_type  = _column_type(table_name, column_name)
+        jsonifiable_result = jsonifiable_column(result, dataplane_type)
         return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
         _log_and_abort(f'Access to table {table_name} not authorized, request /get_all_values', 403)

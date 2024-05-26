@@ -25,12 +25,7 @@ class DataPlaneClient:
 
     def check_input(self, arg_name):
         """
-            Checks if the input is String
-            Args:
-                arg_name: argument that is being checked, String
-
-            Returns:
-                raises exception if argument is not String
+            3
 
         """
         if arg_name is not None:
@@ -39,14 +34,17 @@ class DataPlaneClient:
         else:
             raise ValueError(f"{arg_name} cannot be None")
 
-    def get_all_values(self, table_name, column_name, headers):
+    def get_all_values(self, table_name, column_name, headers - None):
         """
-            Args:
-                table_name: name of the table, String
-                column_name: name of the column, String
-
-            Returns:
-                response.json()
+        Args:
+            table_name: name of the table, String
+            column_name: name of the column, String
+            headers: a dictionary of header variables and values accompanying the request.  
+        Returns:
+            The  list of column values returned by the data plane server.
+        Throws:
+            An InvalidDateExeption if the table_name or column_name are malformed, 
+            or if the server doesn't have a table of that name
         """
 
         # Throwing InvalidDataException if entered data is invalid
@@ -70,7 +68,17 @@ class DataPlaneClient:
         except ColumnNotFoundException:
             _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
 
-    def get_filtered_rows(self, table_name, filter_spec):
+    def get_table(self, table_name, headers = None):
+        """
+        Return the table corresponding to table_name stored on the server
+        Args:
+            table_name: name of the table to get
+            headers:  dictionary of header variables and values accompanying the request
+        Returns:
+            a DataTable 
+        """
+
+    def get_filtered_rows(self, table_name, filter_spec = None, columns = None, headers = None):
         """
             Args:
                 table_name: name of the table, String
