@@ -40,6 +40,7 @@ import random
 import pandas as pd
 import pytest
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
+from dataplane.data_plane_utils import jsonifiable_column
 from dataplane.data_plane_filter import DataPlaneFilter
 from dataplane.data_plane_table import RowTable
 
@@ -255,3 +256,41 @@ def test_get_all_column_values_in_filter():
     _compare_get_all_values({"operator": "ALL", "arguments": [list_filter, regex_filter]}, schema, "foo", {1, 2, 3})
     _compare_get_all_values({"operator": "NONE", "arguments": [list_filter]}, schema, "foo", {1, 2, 3})
     _compare_get_all_values({"operator": "ALL", "arguments": [list_filter, range_filter]}, schema, "foo", {1,2, 3, 4, 5})
+
+from pytest_httpserver import HTTPServer
+from dataplane.data_plane_table import RemoteDataPlaneTable
+from werkzeug.wrappers import Response
+
+def remote_filter_handler(request):
+    data = request.json
+    assert(data['table'] == 'test')
+    filter_spec = data['filter'] if 'filter' in data else None
+    columns = data['columns'] if 'columns' in data else []
+    result = table.get_filtered_rows(filter_spec = filter_spec, columns = columns, jsonify = True )
+    return Response(dumps(result), mimetype='application/json')
+
+
+def test_remote_table_filter():
+    http_server = HTTPServer(port=8888)
+    remote_table = RemoteDataPlaneTable('test', schema, http_server.url_for('/'))
+    http_server.expect_request("/get_tables").respond_with_json({"test": schema})
+    http_server.expect_request("/get_filtered_rows").respond_with_handler(remote_filter_handler)
+    http_server.start()
+    # We've already tested filter functionality, so this is just a test of connectivity
+    # Test no filter or columns
+    assert(remote_table.get_filtered_rows() == table.get_filtered_rows())
+    # Test columns
+    assert(remote_table.get_filtered_rows(columns=['name']) == table.get_filtered_rows(columns=['name']))
+    # test filter on name
+    date_list = jsonifiable_column(dates[:4], DATA_PLANE_DATE)
+    filter_spec = {'operator': 'IN_LIST', 'column': 'date', 'values': date_list}
+    # first, make sure just passing the filter_spec works
+    assert(remote_table.get_filtered_rows(filter_spec=filter_spec) == table.get_filtered_rows(filter_spec = filter_spec))
+    filter = DataPlaneFilter(filter_spec, schema)
+    assert(remote_table.get_filtered_rows(filter_spec=filter_spec) == table.get_filtered_rows_from_filter(filter = filter))
+    assert(remote_table.get_filtered_rows_from_filter(filter =filter) == table.get_filtered_rows_from_filter(filter = filter))
+    http_server.stop()
+
+
+
+test_remote_table_filter()

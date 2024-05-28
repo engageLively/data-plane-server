@@ -182,7 +182,8 @@ class DataPlaneTable:
             jsonify is True or as a list if jsonify is False
         '''
         # Note that we don't check if the column names are all valid
-        return self.get_filtered_rows_from_filter(filter = DataPlaneFilter(filter_spec, self.schema), columns=columns, jsonify=jsonify)
+        filter = DataPlaneFilter(filter_spec, self.schema) if filter_spec is not None else None
+        return self.get_filtered_rows_from_filter(filter = filter, columns=columns, jsonify=jsonify)
     
     def to_json(self):
         '''
@@ -284,17 +285,20 @@ class DataPlaneFixedTable(DataPlaneTable):
         '''
          # Note that we don't check if the column names are all valid
         if columns is None: columns = []  # Make sure there's a value
-        if FileExistsError is None:
+        if filter is None:
             rows = self.get_rows()
         else:
-            filter.filter(self.get_rows())
+            rows = filter.filter(self.get_rows())
         if columns == []:
             result =  rows
+            column_types = self.column_types()
         else:
             names = self.column_names()
             column_indices = [i for i in range(len(names)) if names[i] in columns]
-            result =  [_select_entries_from_row(row, column_indices) for row in rows]
-        return jsonifiable_rows(result) if jsonify else result
+            all_types = self.column_types()
+            column_types = [all_types[i] for i in column_indices]
+            result = [[row[i] for i in column_indices] for row in rows]
+        return jsonifiable_rows(result, column_types) if jsonify else result
 
 
     def to_dataframe(self):
@@ -460,7 +464,7 @@ class RemoteDataPlaneTable(DataPlaneTable):
         b. has self.table_name in its list of tables
         c. the table there has a matching schema
         '''
-        self.ok = True
+        
         try:
             response = requests.get(f'{self.url}/get_tables')
             if response.status_code >= 300:
@@ -476,6 +480,8 @@ class RemoteDataPlaneTable(DataPlaneTable):
             self._check_schema_match(server_schema)
         else:
             self._connect_error(f'Server at {self.url} does not have table {self.table_name}')
+        # if we get here, everything worked:
+        self.ok = True
         
         # also check to make sure that we can authenticate to the table.  See /get_table_spec
 
@@ -575,7 +581,6 @@ class RemoteDataPlaneTable(DataPlaneTable):
         Returns:
             The subset of self.get_rows() which pass the filter
         '''
-        data_plane_type_list = [self.column_type(column) for column in columns] if len(columns) > 0 else [column["type"] for column in self.schema]
         if not self.ok:
             self.connect_with_server()
         request = f'{self.url}/get_filtered_rows'
@@ -586,8 +591,11 @@ class RemoteDataPlaneTable(DataPlaneTable):
             data['filter'] = filter_spec
         if columns is not None and len(columns) > 0:
             data['columns'] = columns
+            data_plane_type_list = [column["type"] for column in self.schema if column["name"] in columns]
+        else: 
+            data_plane_type_list = self.column_types() 
         try:
-            response = requests.post(request, data=data, headers=self.header_dict) if self.header_dict is not None else requests.post(request, data=data)
+            response = requests.post(request, json=data, headers=self.header_dict) if self.header_dict is not None else requests.post(request, json=data)
             if response.status_code >= 300:
                 raise InvalidDataException(f'get_filtered_rows to {self.url}: caused error response {response.status_code}')
             result = response.json() 
@@ -596,7 +604,6 @@ class RemoteDataPlaneTable(DataPlaneTable):
         if jsonify:
             return result
         else:
-            jsonified_list = json.dumps(result)
-            return convert_rows_to_type_list(data_plane_type_list, jsonified_list)
+            return convert_rows_to_type_list(data_plane_type_list, result)
         
                     

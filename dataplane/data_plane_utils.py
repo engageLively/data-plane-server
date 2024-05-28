@@ -131,7 +131,7 @@ def jsonifiable_rows(rows, column_types):
 
 def jsonifiable_column(column, column_type):
     '''
-     Return a jsonifiable version of the column of values, using jsonifiable_value
+    Return a jsonifiable version of the column of values, using jsonifiable_value
     to do the conversion.  We actually cheat a little, only calling _jsonifiable_value if column_type
     is one of DATA_PLANE_TIME, DATA_PLANE_DATE, DATA_PLANE_DATETIME
     '''
