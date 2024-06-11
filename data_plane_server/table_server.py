@@ -49,8 +49,7 @@ from json import load
 import pandas as pd
 
 from dataplane.data_plane_utils import InvalidDataException
-from dataplane.data_plane_table import RowTable, _convert_to_type
-
+from dataplane.data_plane_table import RowTable
 
 class TableNotFoundException(Exception):
     '''
@@ -77,10 +76,6 @@ class ColumnNotFoundException(Exception):
 
     def __init__(self, message):
         super().__init__(message)
-
-
-def _convert_row(row, types):
-    return [_convert_to_type(types[i], row[i]) for i in range(len(types))]
 
 
 def _check_headers(headers):
@@ -152,11 +147,6 @@ class Table:
         list of variable names required for authorization,
         '''
         return list(self.header_dict.keys())
-    
-
-    
-
-
 
 def build_table_spec(filename):
     '''
@@ -186,7 +176,7 @@ def build_table_spec(filename):
         table_spec = load(file)
 
     table = table_spec["table"]
-    row_table = RowTable(table["schema"], table_spec["rows"])
+    row_table = RowTable(table["schema"], table["rows"])
     headers = table_spec['headers'] if 'headers' in table_spec else []
     return {
         "name": table_spec["name"],

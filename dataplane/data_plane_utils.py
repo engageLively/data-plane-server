@@ -256,7 +256,7 @@ def convert_list_to_type(data_plane_type, value_list):
     except Exception as exc:
         raise InvalidDataException(f'Failed to convert {value_list} to {data_plane_type}')
     
-def _convert_row_to_type_list(data_plane_type_list, row):
+def convert_row_to_type_list(data_plane_type_list, row):
     # called from convert_rows_to_type_list, which should error check
     # to make sure that the row is the same length as data_plane_type_list
     return [convert_to_type(data_plane_type_list[i], row[i]) for i in range(len(row))]
@@ -270,7 +270,7 @@ def convert_rows_to_type_list(data_plane_type_list, rows):
     for row in rows:
         if len(row) != length:
             raise InvalidDataException(f'Length mismatch: required number of columns {length}, length {row} = {len(row)}')
-    return  [_convert_row_to_type_list(data_plane_type_list, row) for row in rows]
+    return  [convert_row_to_type_list(data_plane_type_list, row) for row in rows]
     
 def convert_dict_to_type(data_plane_type, value_dict):
     '''

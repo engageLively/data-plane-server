@@ -42,7 +42,7 @@ import json
 from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_DATETIME, DATA_PLANE_DATE, \
     DATA_PLANE_SCHEMA_TYPES, DATA_PLANE_STRING, DATA_PLANE_TIME_OF_DAY
 from dataplane.data_plane_utils import InvalidDataException
-from dataplane.data_plane_utils import jsonifiable_column, jsonifiable_row, jsonifiable_rows, jsonifiable_value
+from dataplane.data_plane_utils import jsonifiable_column, jsonifiable_row, jsonifiable_rows, jsonifiable_value, type_check
 from dataplane.data_plane_utils import convert_list_to_type, convert_dict_to_type, convert_rows_to_type_list
 from dataplane.data_plane_filter import DataPlaneFilter
 
@@ -63,6 +63,31 @@ DEFAULT_HEADER_VARIABLES = {"required": [], "optional": []}
 '''
 The Default for header variables for a table is both required and optional lists are empty.
 '''
+
+def get_errors(entry):
+    '''
+    A Utility to make sure that a schema entry is valid.  It must have a name, a type, both must be strings, 
+    and the type is one of DATA_PLANE_SCHEMA_TYPES.
+    Arguments:
+        entry: a dictionary with (at least) the keys name, type
+    Returns:
+        A list of errors, which will be the empty list if no errors are found.
+    '''
+    if not type(entry) == dict:
+        return [f'Schema entry {entry} must be a dictionary, not {type(entry)}']
+    result = []
+    keys = set(entry.keys())
+    if not 'name' in keys:
+        result.append(f'Column {entry} must have a name')
+    elif type(entry['name']) != str:
+        result.append(f'Name of column {entry} must be a string')
+    if not 'type' in keys:
+        result.append(f'Column {entry} must have a type')
+    elif not (type(entry['type']) == str and entry['type'] in DATA_PLANE_SCHEMA_TYPES):
+        result.append(f'Type of column {entry} must be one of {DATA_PLANE_SCHEMA_TYPES}' )
+    return result
+            
+    
 
 class DataPlaneTable:
     '''
@@ -92,6 +117,13 @@ class DataPlaneTable:
            The column_type must be a type from galyleo_constants.DATA_PLANE_TYPES.
     '''
     def __init__(self, schema):
+        if type(schema) != list:
+            raise InvalidDataException(f'The schema must be a list of dictionaries, not {type(schema)}')
+        error_entries = [get_errors(entry) for entry in schema]
+        error_entries = [entry for entry in error_entries if len(entry) > 0]
+        if len(error_entries) > 0:
+            raise InvalidDataException(f"Errors in schema {schema}: {error_entries}")
+           
         self.schema = schema
         self.is_dataplane_table = True
 
@@ -374,7 +406,7 @@ class RowTable(DataPlaneFixedTable):
     
         
 
-class  RemoteCSVTable(DataFrameTable):
+class  RemoteCSVTable(DataPlaneFixedTable):
     '''
     A very common format for data interchange on the Internet is a downloadable
     CSV file.  It's so common it's worth making a class, just for this.  The

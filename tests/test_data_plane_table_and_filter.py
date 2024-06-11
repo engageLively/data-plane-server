@@ -291,6 +291,3 @@ def test_remote_table_filter():
     assert(remote_table.get_filtered_rows_from_filter(filter =filter) == table.get_filtered_rows_from_filter(filter = filter))
     http_server.stop()
 
-
-
-test_remote_table_filter()

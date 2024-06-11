@@ -50,16 +50,17 @@ import os
 from json import JSONDecodeError, loads
 from glob import glob
 
-import pandas as pd
+import csv
 
 from flask import Blueprint, abort, jsonify, request
 
-from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, jsonifiable_column, jsonifiable_row, jsonifiable_rows, jsonifiable_value
+from dataplane.data_plane_utils import DATA_PLANE_SCHEMA_TYPES,  jsonifiable_column,  jsonifiable_rows, jsonifiable_value
 
-from dataplane.data_plane_utils import InvalidDataException
-from dataplane.data_plane_table import check_valid_spec
+from dataplane.data_plane_utils import InvalidDataException, convert_row_to_type_list
+from dataplane.data_plane_table import RowTable
+from dataplane.data_plane_filter import check_valid_spec
 from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, \
-    ColumnNotFoundException, build_table_spec
+    ColumnNotFoundException, build_table_spec, Table
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
@@ -143,12 +144,91 @@ def _column_types(table, columns):
     return [column["type"] for column in table.schema if column["name"] in columns]
 
 
-# @data_plane_server_blueprint.route('/echo_post', methods=['POST'])
-# def echo_post():
-#     '''
-#     Echo the request
-#     '''
-#     return jsonify(request.json)
+def create_server_from_csv(table_name, path_to_csv_file, table_server, headers=None):
+    '''
+    Create a server from a CSV file.The file must meet the format for a RowTable:
+    1. Each row must contain the same number of columns;
+    2. The first row (row 0) are the names of the columns
+    3. The second row (row 1)  has the types of the columns
+    4. The type of each entry in rows 2-n must match the declared type of the column
+    Note that it is expected that the csv file will have been appropriately conditioned; all
+    of the elements in each numeric column are numbers, and dates, times, and datetimes are in isoformat
+    Arguments:
+         table_name: the name of the table to add
+         path_to_csv_file: the path to the csv file to read
+         table_server: the server to add the table to (an instance of table_server.TableServer)
+         headers: any authorization headers (default {})
+
+    '''
+    if headers is None:
+        headers = {}
+    try:
+        with open(path_to_csv_file, 'r') as f:
+            r = csv.reader(f)
+            rows = [row for row in r]
+        assert len(rows) > 2
+        num_columns = len(rows[0])
+        columns = [entry.strip() for entry in rows[0]]
+        for row in rows[1:]: assert len(row) == num_columns
+        types = [entry.strip() for entry in rows[1]]
+        for entry in types: assert entry in DATA_PLANE_SCHEMA_TYPES
+    except Exception as error:
+        raise InvalidDataException(error)
+
+    schema = [{"name": columns[i], "type": types[i]} for i in range(num_columns)]
+    column_type_list = [{"type": data_plane_type} for data_plane_type in types]
+    try:
+        final_rows = [convert_row_to_type_list(column_type_list, row) for row in rows[2:]]
+        data_plane_table = RowTable(schema, final_rows)
+        data_server_table = Table(data_plane_table, headers)
+        table_server.add_data_plane_table({"name": table_name, "table": data_server_table})
+
+    except ValueError as error:
+        raise InvalidDataException(f'{error} raised during type conversion')
+    
+def get_json_body_from_post_request_data(request):
+    '''
+    Get the json body (if any) from the data field of a  request.  The JSON
+    body might be as a dict or as a string; if the latter, decode it
+    Arguments:
+        request: a Flask request 
+    Returns:
+        A dictionary the json decode of the body, or None for a decode failure, no
+        data
+    '''
+    if request.data is None: return None
+    if not type(request.data) in {bytes, str}: return request.data
+    try:
+        return loads(request.data)
+    except JSONDecodeError:
+        return None
+
+def get_post_argument(key, form_data, data, get_multi = False):
+    '''
+    Get the value of the POST argument key from a request.  These can be either in the
+    form (which is a MultiDict) or in the data body.
+    
+    Arguments:
+        key: the key for the request
+        form_data: the contents of request.form
+        data: the contents of request.data, parsed into a JSON dict
+        get_multi: if true and the results are in a MultiDict (request.form) returns a list of all values
+    Returns:
+        The value, or None if it is not present.  Raised no exceptions
+    '''
+    if form_data:
+        try:
+            result = form_data.getlist(key) if get_multi else form_data.get(key)
+            if result is not None: return result
+        except KeyError:
+            pass
+    if data:
+        try:
+            return data[key]
+        except KeyError:
+            return None
+    return None
+
 
 
 @data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
@@ -165,12 +245,12 @@ def get_filtered_rows():
         The filtered rows as a JSONified list of lists
     '''
     try:
-        print(request.data)
-        filter_spec = request.form.get("filter")
-        columns = request.form.get("columns")
-        try:
-            table_name = request.form.get("table")
-        except KeyError:
+        # print(request.data)
+        json_data = get_json_body_from_post_request_data(request)
+        filter_spec = get_post_argument('filter', request.form, json_data)
+        columns = get_post_argument('columns', request.form, json_data)
+        table_name = get_post_argument('table', request.form, json_data)
+        if table_name is None:
             _log_and_abort('table is a required parameter to get filtererd rows', 400)
 
     except JSONDecodeError as error:

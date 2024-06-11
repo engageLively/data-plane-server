@@ -1,17 +1,6 @@
 '''
-A framework to easily and quickly implement a web server which serves tables according to
-the Data Plane Rest  protocol.  This implements the URL methods get_filtered_rows, get_all_values,
-and get_numeric_spec.  It parses the arguments, checking for errors, takes the
-table argument, looks up the appropriate DataPlaneTable to serve for that table, and
-then calls the method on that server to serve the request.  If no exception is thrown,
-returns a 200 with the result as a JSON structure, and if an exception is thrown, returns
-a 400 with an approrpriate error message.
-All of the methods here except for add_data_plane_table are simply route targets: none are
-designed for calls from any method other than flask.
-The way to use this is very simple:
-1. For each Table to be served, create an instance of data_plane_table.DataPlaneTable
-2. Call add_data_plane_table(table_name, data_plane_table)
-After that, requests for the named table will be served by the created data server.
+A sample server to illustrate the DataPlane server.  This server instantiates a number of tables from various sources.  Some
+are internal CSV sources, and some are 
 
 '''
 
@@ -99,21 +88,4 @@ def create_server_from_csv(table_name, path_to_csv_file, table_server, headers=N
         raise InvalidDataException(f'{error} raised during type conversion')
 
 
-class RemoteCSVTable(DataPlaneTable):
-    '''
-    A very common format for data interchange on the Internet is a downloadable
-    CSV file.  It's so common it's worth making a class, just for this.  The
-    idea is that, when a get_rows request comes in, we download the table
-    into a dataframe and then return the list of rows, perhaps after doing
-    unit conversion
-    '''
 
-    def __init__(self, schema, url):
-        super(schema, self.get_rows)
-        self.url = url
-        self.dataframe = None
-
-    def get_rows(self):
-        if self.dataFrame is None:
-            self.dataframe = pd.read_csv(self.url)
-        return self.dataframe.values.tolist()
