@@ -34,8 +34,9 @@ and the data plane server
 import pytest
 from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec, Table
 from dataplane.data_plane_table import RowTable
-from dataplane.data_plane_utils import InvalidDataException
-
+from dataplane.data_plane_utils import InvalidDataException, DATA_PLANE_STRING
+import os
+os.chdir('/workspaces/dataplane/data_plane')
 
 def test_build_table_spec():
     '''
@@ -83,7 +84,7 @@ def test_table():
     # test the Table() constructor.  Most of the correct cases were tested
     # by test_build_table
     # Simple table for the tests
-    schema = [{"name": 'strine'}]
+    schema = [{"name": 'name', 'type':  DATA_PLANE_STRING}]
     rows = [['Tom'], ['Dick']]
     table = RowTable(schema, rows)
     # Test a bad table type
@@ -205,8 +206,8 @@ def test_get_range_spec():
     # Check the good cases
     assert table_server.get_range_spec('protected', 'column2', {'foo': 'bar'}) == specs['protected'].table.range_spec('column2')
 
+test_table()
 
-test_get_range_spec()
     
 
 

@@ -1,6 +1,6 @@
 # BSD 3-Clause License
 
-# Copyright (c) 2019-2021, engageLively
+# Copyright (c) 2019-2024, engageLively
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-Run tests on the dashboard table
+Run tests on the table server
 '''
 
 import pytest
 import json
-from dataplane.data_plane_utils import DATA_PLANE_BOOLEAN, DATA_PLANE_NUMBER, DATA_PLANE_STRING, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY, InvalidDataException
-from dataplane.data_plane_table import DataPlaneFilter, DataPlaneTable, RowTable, check_valid_spec, DATA_PLANE_FILTER_FIELDS, DATA_PLANE_FILTER_OPERATORS
-
 import os
 
 os.chdir('/workspaces/dataplane/data_plane')
@@ -152,7 +149,9 @@ def test_get_filtered_rows():
     header_list = [({}, 403), ({"foo": "foo"}, 403), ({"foo": "bar"}, 200) ]
     # Missing authentication
     for (header, code) in header_list:
-        response = client.post('get_filtered_rows', json={'table':'protected'}, headers=header)
+        send_header = header.copy()
+        send_header['Content-Type'] = 'application/json'
+        response = client.post('get_filtered_rows', json={'table':'protected'}, headers=send_header)
         assert response.status_code == code
     # Bad column
     response = client.post('get_filtered_rows', json=({"table": "test1", "columns": "foo"}))
@@ -193,3 +192,5 @@ def test_get_filtered_rows():
     response = client.post('get_filtered_rows', json={"table": "test1", "columns": ["datetime"], "filter": filter_spec})
     assert response.status_code == 200
     assert response.json == result
+
+test_get_filtered_rows()

@@ -50,24 +50,23 @@ import os
 from json import JSONDecodeError, loads
 from glob import glob
 
-import pandas as pd
+import csv
 
 from flask import Blueprint, abort, jsonify, request
 
+from dataplane.data_plane_utils import DATA_PLANE_SCHEMA_TYPES,  jsonifiable_column,  jsonifiable_rows, jsonifiable_value
 
-from dataplane.data_plane_utils import DATA_PLANE_NUMBER, DATA_PLANE_DATE, DATA_PLANE_DATETIME, DATA_PLANE_TIME_OF_DAY
-
-from dataplane.data_plane_utils import InvalidDataException
-from dataplane.data_plane_table import  check_valid_spec
-from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, ColumnNotFoundException, build_table_spec
+from dataplane.data_plane_utils import InvalidDataException, convert_row_to_type_list
+from dataplane.data_plane_table import RowTable
+from dataplane.data_plane_filter import check_valid_spec
+from data_plane_server.table_server import TableServer, TableNotFoundException, TableNotAuthorizedException, \
+    ColumnNotFoundException, build_table_spec, Table
 
 data_plane_server_blueprint = Blueprint('data_plane_server', __name__)
 
 table_server = TableServer()
 
-NON_JSONIFIABLE_TYPES =  {DATA_PLANE_DATE, DATA_PLANE_TIME_OF_DAY, DATA_PLANE_DATETIME}
-
-def _log_and_abort(message, code = 400):
+def _log_and_abort(message, code=400):
     '''
     Sent an abort with error code (defaut 400) and log the error message.  Utility, internal use only
 
@@ -76,6 +75,7 @@ def _log_and_abort(message, code = 400):
     '''
     logging.error(message)
     abort(code, message)
+
 
 def _table_server_if_authorized(request_api, table_name):
     '''
@@ -97,7 +97,7 @@ def _table_server_if_authorized(request_api, table_name):
         code = 403
     _log_and_abort(msg, code)
 
-        
+
 def _get_table(request_api):
     '''
     Internal use.  Get the server for a specific table_name and return it.
@@ -109,56 +109,6 @@ def _get_table(request_api):
     '''
     table_name = request.args.get('table_name')
     return _table_server_if_authorized(request_api, table_name)
-
-def _jsonifiable_value(value, column_type):
-    '''
-    Internal use.  Python doesn't jsonify dates, datetimes, or times properly, so
-    convert them to isoformat strings.  Return everything else as is
-    Arguments:
-        value -- the value to be converted
-        column_type -- the data plane type of the value
-    Returns
-        A jsonifiable form of the value
-    '''
-    if column_type in NON_JSONIFIABLE_TYPES:
-        return value.isoformat()
-    else:
-        return value
-
-def _jsonifiable_row_(row, column_types):
-    '''
-    Internal use.  Return the jsonified form of the row, using _jsonifiable_value for each element
-    Arguments:
-        row -- the row to be converted
-        column_types -- the types of each element of the row
-    Returns
-        A row of jsonifiable values
-    '''
-    return [_jsonifiable_value(row[i], column_types[i]) for i in range(len(row))]
-
-
-def _jsonifiable_rows_(rows, column_types):
-    '''
-    Internal use.  Return the jsonifiable form of the list of rows, using _jsonifiable_row for each row
-    Arguments:
-        rows -- the list of rows to be converted
-        column_types -- the types of each element of the row
-    Returns
-        A list of rows  of jsonified values
-    '''
-    return [_jsonifiable_row_(row, column_types) for row in rows]
-
-def _jsonifiable_column(column, column_type):
-    '''
-    Internal use.  Return a jsonifiable version of the column of values, using _jsonifiable_value
-    to do the conversion.  We actually cheat a little, only calling _jsonifiable_value if column_type
-    is one od DATA_PLANE_TIME, DATA_PLANE_DATE, DATA_PLANE_DATETIME
-    '''
-    if column_type in NON_JSONIFIABLE_TYPES:
-        return [_jsonifiable_value(value, column_type) for value in column]
-    else: 
-        return column
-    
 
 def _column_type(table_name, column):
     '''
@@ -192,24 +142,102 @@ def _column_types(table, columns):
     if columns == []:
         return table.column_types()
     return [column["type"] for column in table.schema if column["name"] in columns]
+
+
+def create_server_from_csv(table_name, path_to_csv_file, table_server, headers=None):
+    '''
+    Create a server from a CSV file.The file must meet the format for a RowTable:
+    1. Each row must contain the same number of columns;
+    2. The first row (row 0) are the names of the columns
+    3. The second row (row 1)  has the types of the columns
+    4. The type of each entry in rows 2-n must match the declared type of the column
+    Note that it is expected that the csv file will have been appropriately conditioned; all
+    of the elements in each numeric column are numbers, and dates, times, and datetimes are in isoformat
+    Arguments:
+         table_name: the name of the table to add
+         path_to_csv_file: the path to the csv file to read
+         table_server: the server to add the table to (an instance of table_server.TableServer)
+         headers: any authorization headers (default {})
+
+    '''
+    if headers is None:
+        headers = {}
+    try:
+        with open(path_to_csv_file, 'r') as f:
+            r = csv.reader(f)
+            rows = [row for row in r]
+        assert len(rows) > 2
+        num_columns = len(rows[0])
+        columns = [entry.strip() for entry in rows[0]]
+        for row in rows[1:]: assert len(row) == num_columns
+        types = [entry.strip() for entry in rows[1]]
+        for entry in types: assert entry in DATA_PLANE_SCHEMA_TYPES
+    except Exception as error:
+        raise InvalidDataException(error)
+
+    schema = [{"name": columns[i], "type": types[i]} for i in range(num_columns)]
+    column_type_list = [{"type": data_plane_type} for data_plane_type in types]
+    try:
+        final_rows = [convert_row_to_type_list(column_type_list, row) for row in rows[2:]]
+        data_plane_table = RowTable(schema, final_rows)
+        data_server_table = Table(data_plane_table, headers)
+        table_server.add_data_plane_table({"name": table_name, "table": data_server_table})
+
+    except ValueError as error:
+        raise InvalidDataException(f'{error} raised during type conversion')
     
+def get_json_body_from_post_request_data(request):
+    '''
+    Get the json body (if any) from the data field of a  request.  The JSON
+    body might be as a dict or as a string; if the latter, decode it
+    Arguments:
+        request: a Flask request 
+    Returns:
+        A dictionary the json decode of the body, or None for a decode failure, no
+        data
+    '''
+    if request.data is None: return None
+    if not type(request.data) in {bytes, str}: return request.data
+    try:
+        return loads(request.data)
+    except JSONDecodeError:
+        return None
 
+def get_post_argument(key, form_data, data, get_multi = False):
+    '''
+    Get the value of the POST argument key from a request.  These can be either in the
+    form (which is a MultiDict) or in the data body.
+    
+    Arguments:
+        key: the key for the request
+        form_data: the contents of request.form
+        data: the contents of request.data, parsed into a JSON dict
+        get_multi: if true and the results are in a MultiDict (request.form) returns a list of all values
+    Returns:
+        The value, or None if it is not present.  Raised no exceptions
+    '''
+    if form_data:
+        try:
+            result = form_data.getlist(key) if get_multi else form_data.get(key)
+            if result is not None: return result
+        except KeyError:
+            pass
+    if data:
+        try:
+            return data[key]
+        except KeyError:
+            return None
+    return None
 
-
-# @data_plane_server_blueprint.route('/echo_post', methods=['POST'])
-# def echo_post():
-#     '''
-#     Echo the request
-#     '''
-#     return jsonify(request.json)
 
 
 @data_plane_server_blueprint.route('/get_filtered_rows', methods=['POST'])
 def get_filtered_rows():
     '''
     Get the filtered rows from a request.   Gets the filter_spec from the filter  field in the body, the table name from the table field
-    in the body.  If there is a columns field in the body, returns 
-    onlyt the named columns.  If there is no filter_spec, returns all rows using server.get_rows().  Aborts with a 400 if there is no table, or if check_valid_spec or get_filtered_rows throws an InvalidDataException, or if the filter_spec is not valid JSON.
+    in the body.  If there is a columns field in the body, returns
+    onlyt the named columns.  If there is no filter_spec, returns all rows using server.get_rows().
+    Aborts with a 400 if there is no table, or if check_valid_spec or get_filtered_rows throws an InvalidDataException, or if the filter_spec is not valid JSON.
 
     Arguments:
         None
@@ -217,14 +245,14 @@ def get_filtered_rows():
         The filtered rows as a JSONified list of lists
     '''
     try:
-        data = request.get_json()
-        filter_spec =  data["filter"] if 'filter' in data else None
-        columns =  data["columns"] if 'columns' in data else []
-        try:
-            table_name = data["table"]
-        except KeyError:
+        # print(request.data)
+        json_data = get_json_body_from_post_request_data(request)
+        filter_spec = get_post_argument('filter', request.form, json_data)
+        columns = get_post_argument('columns', request.form, json_data)
+        table_name = get_post_argument('table', request.form, json_data)
+        if table_name is None:
             _log_and_abort('table is a required parameter to get filtererd rows', 400)
-        
+
     except JSONDecodeError as error:
         _log_and_abort(f'Bad arguments to /get_filtered_rows.  Error {error.msg}')
     table = _table_server_if_authorized('/get_filtered_rows', table_name)
@@ -236,7 +264,7 @@ def get_filtered_rows():
     bad_columns = [column for column in columns if column not in names]
     if (len(bad_columns) > 0):
         _log_and_abort(f'Bad Columns {bad_columns} sent to /get_filtered_rows, table {table_name}', 400)
-    
+
     # If there is no filter, just return the table's rows.  If
     # there is a filter, make sure it's valid and then return the filtered
     # rows
@@ -245,12 +273,11 @@ def get_filtered_rows():
             check_valid_spec(filter_spec)
         except InvalidDataException as invalid_error:
             _log_and_abort(invalid_error)
-    result = table.get_filtered_rows(filter_spec = filter_spec, columns = columns)
+    result = table.get_filtered_rows(filter_spec=filter_spec, columns=columns)
     types = _column_types(table, columns)
-    jsonifiable_result = _jsonifiable_rows_(result, types)
+    jsonifiable_result = jsonifiable_rows(result, types)
 
     return jsonify(jsonifiable_result)
-        
 
 
 def _check_required_parameters(route, required_parameters):
@@ -279,21 +306,21 @@ def get_range_spec():
             None
     '''
     _check_required_parameters('/get_range_spec', ['table_name', 'column_name'])
-    column_name =  request.args.get('column_name')
+    column_name = request.args.get('column_name')
     table_name = request.args.get('table_name')
     try:
         result = table_server.get_range_spec(table_name, column_name, request.headers)
-        type = _column_type(table_name, column_name)
+        dataplane_type = _column_type(table_name, column_name)
         jsonifiable_result = {
-            "max_val": _jsonifiable_value(result["max_val"], type),
-            "min_val": _jsonifiable_value(result["min_val"], type),
+            "max_val": jsonifiable_value(result["max_val"], dataplane_type ),
+            "min_val": jsonifiable_value(result["min_val"], dataplane_type ),
         }
         return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
         _log_and_abort(f'Access to table {table_name} not authorized, request /get_range_spec', 403)
     except TableNotFoundException:
         _log_and_abort(f'No  table {table_name} present, request /get_range_spec', 400)
-    except ColumnNotFoundException: 
+    except ColumnNotFoundException:
         _log_and_abort(f'No column {column_name} in table {table_name}, request /get_range_spec', 400)
 
 
@@ -308,19 +335,20 @@ def get_all_values():
             None
     '''
     _check_required_parameters('/get_all_values', ['table_name', 'column_name'])
-    column_name =  request.args.get('column_name')
+    column_name = request.args.get('column_name')
     table_name = request.args.get('table_name')
     try:
         result = table_server.get_all_values(table_name, column_name, request.headers)
-        type = _column_type(table_name, column_name)
-        jsonifiable_result = _jsonifiable_column(result, type)
+        dataplane_type  = _column_type(table_name, column_name)
+        jsonifiable_result = jsonifiable_column(result, dataplane_type)
         return jsonify(jsonifiable_result)
     except TableNotAuthorizedException:
         _log_and_abort(f'Access to table {table_name} not authorized, request /get_all_values', 403)
     except TableNotFoundException:
         _log_and_abort(f'No  table {table_name} present, request /get_all_values', 400)
-    except ColumnNotFoundException: 
+    except ColumnNotFoundException:
         _log_and_abort(f'No column {column_name} in table {table_name}, request /get_all_values', 400)
+
 
 @data_plane_server_blueprint.route('/get_tables')
 def get_tables():
@@ -336,6 +364,7 @@ def get_tables():
 
     return jsonify(items)
 
+
 @data_plane_server_blueprint.route('/get_table_spec')
 def get_table_spec():
     '''
@@ -348,18 +377,18 @@ def get_table_spec():
     '''
     return jsonify(table_server.get_auth_spec())
 
-@data_plane_server_blueprint.route('/init', methods = ['POST', 'GET'])
+
+@data_plane_server_blueprint.route('/init', methods=['POST', 'GET'])
 def init():
     table_server.__init__()
     paths = [path for path in ['tables', 'data_plane/tables'] if os.path.isdir(path)]
     path = paths[0] if len(paths) > 0 else None
-    
+
     if path is not None:
         files = glob(f'{path}/*.json')
         for filename in files:
             table_server.add_data_plane_table(build_table_spec(filename))
     return jsonify(table_server.get_auth_spec())
-        
 
 
 @data_plane_server_blueprint.route('/help', methods=['POST', 'GET'])
@@ -370,15 +399,27 @@ def show_routes():
     Arguments: None
     '''
     pages = [
-            {"url": "/, /help", "headers": "", "method": "GET", "description": "print this message"},
-            {"url": "/get_tables", "method": "GET", "headers": "<i>as required for authentication</i>", "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
-            {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "POST", "body": {"table": "<i> required, the name of the table to get the rows from<i/>", "columns": "<i> If  present, a list of the names of the columns to fetch</i>","filter": "<i> optional, a filter_spec in the data plane filter language" }, "headers": "<i> as required for authentication</i>", "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
-            {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers":"<i>as required for authentication</i>", "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},
-            {"url": "/get_all_values?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET", "headers": "<i>as required for authentication</i>", "description": "Get all the distinct values for column <i>column_name</i> in table <i>table_name</i>, returned as a sorted list.  Authentication variables shjould be in headers."},
-            {"url": "/get_table_spec", "method": "GET", "description": "Return the dictionary of table names and authorization variables"},
-            {"url": "/init", "method": "GET", "description": "Restart the table server and load any initial tables.  Returns the list returned by /get_table_spec"},
+        {"url": "/, /help", "headers": "", "method": "GET", "description": "print this message"},
+        {"url": "/get_tables", "method": "GET", "headers": "<i>as required for authentication</i>",
+         "description": 'Dumps a JSONIfied dictionary of the form:{table_name: <table_schema>}, where <table_schema> is a dictionary{"name": name, "type": type}'},
+        {"url": "/get_filtered_rows?table_name<i>string, required</i>", "method": "POST",
+         "body": {"table": "<i> required, the name of the table to get the rows from<i/>",
+                  "columns": "<i> If  present, a list of the names of the columns to fetch</i>",
+                  "filter": "<i> optional, a filter_spec in the data plane filter language"},
+         "headers": "<i> as required for authentication</i>",
+         "description": "Get the rows from table Table-Name (and, optionally, Dashboard-Name) which match filter Filter-Spec"},
+        {"url": "/get_range_spec?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET",
+         "headers": "<i>as required for authentication</i>",
+         "description": "Get the  minimum, and maximumvalues for column <i>column_name</i> in table<i>table_name</i>, returned as a dictionary {min_val, max_val}."},
+        {"url": "/get_all_values?column_name<i>string, required</i>&table_name<i>string, required</i>", "method": "GET",
+         "headers": "<i>as required for authentication</i>",
+         "description": "Get all the distinct values for column <i>column_name</i> in table <i>table_name</i>, returned as a sorted list.  Authentication variables shjould be in headers."},
+        {"url": "/get_table_spec", "method": "GET",
+         "description": "Return the dictionary of table names and authorization variables"},
+        {"url": "/init", "method": "GET",
+         "description": "Restart the table server and load any initial tables.  Returns the list returned by /get_table_spec"},
 
-        ]
+    ]
     page_strings = [f'<li>{page}</li>' for page in pages]
 
     return f'<ul>{"".join(page_strings)}</ul>'

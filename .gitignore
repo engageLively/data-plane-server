@@ -111,3 +111,6 @@ ENV/
 
 # debugging files
 debug_data_plane_table.py
+t1.py
+test1.py
+test_remote.py
