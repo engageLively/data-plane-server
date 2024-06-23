@@ -222,7 +222,7 @@ class DataPlaneFilter:
             try:
                 result["column"] = self.column_name
             except AttributeError as e:
-                print(result)
+                raise InvalidDataException(f"Filter with operator {self.operator} must have a column name")
 
             if self.operator == 'IN_LIST':
                 result["values"] = jsonifiable_column(self.value_list, self.column_type)
